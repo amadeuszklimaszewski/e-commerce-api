@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import UserProfile, UserProfileAdress
+from .models import UserProfile, UserProfileAddress
 
 
 admin.site.register(UserProfile)
-admin.site.register(UserProfileAdress)
+admin.site.register(UserProfileAddress)

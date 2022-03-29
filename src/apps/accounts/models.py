@@ -5,7 +5,7 @@ import uuid
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class UserProfileAdress(models.Model):
+class UserProfileAddress(models.Model):
     address_1 = models.CharField(max_length=150, blank=True, null=True)
     address_2 = models.CharField(max_length=150, blank=True, null=True)
     country = CountryField()
@@ -14,11 +14,11 @@ class UserProfileAdress(models.Model):
     postalcode = models.CharField(max_length=16)
 
     class Meta:
-        verbose_name = "Adress"
-        verbose_name_plural = "Adresses"
+        verbose_name = "Address"
+        verbose_name_plural = "Addresses"
 
     def __str__(self) -> str:
-        return f"Adress: {self.address_1}, {self.city}, {self.country}"
+        return f"Address: {self.address_1}, {self.city}, {self.country}"
 
 
 class UserProfile(models.Model):
@@ -26,7 +26,7 @@ class UserProfile(models.Model):
     account_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     phone_number = PhoneNumberField()
     birthday = models.DateField()
-    adress = models.ManyToManyField(UserProfileAdress)
+    address = models.ManyToManyField(UserProfileAddress)
     created = models.DateTimeField(auto_now_add=True)
     update = models.DateTimeField(auto_now=True)
 
