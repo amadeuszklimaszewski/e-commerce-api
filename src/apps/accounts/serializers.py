@@ -6,7 +6,12 @@ from .models import UserAddress, UserProfile
 
 class UserSerializer(serializers.ModelSerializer):
 
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        help_text="Leave empty if no change needed",
+        style={"input_type": "password", "placeholder": "Password"},
+    )
     email = serializers.EmailField(
         validators=[
             UniqueValidator(
@@ -44,8 +49,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     user = UserSerializer(many=False, required=True)
     address = UserAddressSerializer(many=True)
-    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
         model = UserProfile
