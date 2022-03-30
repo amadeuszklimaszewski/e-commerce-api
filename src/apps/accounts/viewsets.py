@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets, mixins
 from .serializers import UserProfileSerializer, UserSerializer
-from .models import UserProfile, UserProfileAddress
+from .models import UserProfile, UserAddress
 
 
 class UserViewSet(viewsets.ModelViewSet):

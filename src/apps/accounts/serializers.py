@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserProfile, UserProfileAddress
+from .models import UserAddress, UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,4 +24,37 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "password",
+        )
+
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = (
+            "address_1",
+            "address_2",
+            "country",
+            "state",
+            "city",
+            "postalcode",
+        )
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    user = UserSerializer(many=False, required=True)
+    address = UserAddressSerializer(many=True)
+    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = UserProfile
+        fields = (
+            "user",
+            "account_id",
+            "phone_number",
+            "birthday",
+            "address",
+            "created",
+            "updated",
         )
