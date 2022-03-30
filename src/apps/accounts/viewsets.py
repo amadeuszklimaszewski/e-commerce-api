@@ -10,7 +10,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = "pk"
 
 
-class UserProfileViewSet(viewsets.GenericViewSet):
+class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     lookup_field = "pk"

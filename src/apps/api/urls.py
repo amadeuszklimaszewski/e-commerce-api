@@ -7,6 +7,6 @@ from src.apps.accounts.viewsets import UserViewSet, UserProfileViewSet
 # router.register(r"profiles", UserProfileViewSet)
 
 urlpatterns = [
-    # re_path(r"^", include(router.urls)),
     path("accounts/", include("src.apps.accounts.urls")),
+    # re_path(r"^", include(router.urls)),
 ]
