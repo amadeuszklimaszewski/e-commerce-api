@@ -14,7 +14,14 @@ class UserInputSerializer(serializers.ModelSerializer):
         help_text="Leave empty if no change needed",
         style={"input_type": "password", "placeholder": "Password"},
     )
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        # TODO move to services.py
+        # validators=[
+        #     UniqueValidator(
+        #         queryset=User.objects.all(), message="Email already in use!"
+        #     )
+        #
+    )
 
     class Meta:
         model = User
@@ -28,15 +35,6 @@ class UserInputSerializer(serializers.ModelSerializer):
 
 
 class UserOutputSerializer(serializers.ModelSerializer):
-
-    email = serializers.EmailField(
-        # validators=[
-        #     UniqueValidator(
-        #         queryset=User.objects.all(), message="Email already in use!"
-        #     )
-        # ]
-    )
-
     class Meta:
         model = User
         fields = (
@@ -64,8 +62,6 @@ class UserAddressSerializer(serializers.ModelSerializer):
 class UserProfileListOutputSerializer(serializers.ModelSerializer):
     user = UserOutputSerializer(many=False, required=True)
     address = UserAddressSerializer(many=True)
-    # created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    # updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     url = serializers.HyperlinkedIdentityField(
         view_name="user-detail", lookup_field="account_id"
     )
@@ -75,13 +71,9 @@ class UserProfileListOutputSerializer(serializers.ModelSerializer):
         fields = (
             "user",
             "account_id",
+            "address",
             "endpoint",
             "url",
-            # "phone_number",
-            # "birthday",
-            "address",
-            # "created",
-            # "updated",
         )
 
 
@@ -108,7 +100,7 @@ class UserDetailOutputSerializer(serializers.ModelSerializer):
 class RegistrationInputSerializer(serializers.ModelSerializer):
 
     user = UserInputSerializer(many=False, required=True)
-    address = UserAddressSerializer(many=False, required=False)
+    address = UserAddressSerializer(many=False)
 
     class Meta:
         model = UserProfile

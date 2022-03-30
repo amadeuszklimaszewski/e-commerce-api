@@ -27,7 +27,6 @@ class RegistrationCreateAPIView(generics.CreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = RegistrationInputSerializer
     permission_classes = [permissions.AllowAny]
-    parser_classes = [JSONParser]
 
 
 class AdressListCreateAPIView(generics.ListCreateAPIView):
