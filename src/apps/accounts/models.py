@@ -34,5 +34,12 @@ class UserProfile(models.Model):
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
 
+    def get_absolute_url(self):
+        return f"/api/accounts/{self.account_id}/"
+
+    @property
+    def endpoint(self):
+        return self.get_absolute_url()
+
     def __str__(self) -> str:
         return f"Profile of the user: {self.user.username}"

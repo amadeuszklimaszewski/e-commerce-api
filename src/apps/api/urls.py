@@ -1,6 +1,7 @@
 from django.urls import include, re_path, path
 from rest_framework.routers import DefaultRouter
-from src.apps.accounts.viewsets import UserViewSet, UserProfileViewSet
+
+# from src.apps.accounts.viewsets import UserViewSet, UserProfileViewSet
 
 
 # router = DefaultRouter()
