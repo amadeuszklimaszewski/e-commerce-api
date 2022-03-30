@@ -1,16 +1,15 @@
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.parsers import JSONParser
-from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .models import UserAddress, UserProfile
+from .serializers import UserAddressSerializer, UserProfileSerializer
 
 
 class UserProfileListAPIView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = "pk"
-    allow_staff_view = True
 
 
 class UserProfileDetailAPIView(generics.RetrieveAPIView):
@@ -24,3 +23,9 @@ class RegistrationCreateAPIView(generics.CreateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.AllowAny]
     parser_classes = [JSONParser]
+
+
+class AdressListCreateAPIView(generics.ListCreateAPIView):
+    queryset = UserAddress.objects.all()
+    serializer_class = UserAddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
