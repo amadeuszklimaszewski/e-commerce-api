@@ -1,37 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django_countries.serializers import CountryFieldMixin
+from django_countries.serializer_fields import CountryField
 from .models import UserAddress, UserProfile
 
 
 User = get_user_model()
-
-
-class UserInputSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        write_only=True,
-        required=True,
-        help_text="Leave empty if no change needed",
-        style={"input_type": "password", "placeholder": "Password"},
-    )
-    email = serializers.EmailField(
-        # TODO move to services.py
-        # validators=[
-        #     UniqueValidator(
-        #         queryset=User.objects.all(), message="Email already in use!"
-        #     )
-        #
-    )
-
-    class Meta:
-        model = User
-        fields = (
-            "username",
-            "first_name",
-            "last_name",
-            "email",
-            "password",
-        )
 
 
 class UserOutputSerializer(serializers.ModelSerializer):
@@ -44,9 +19,10 @@ class UserOutputSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
         )
+        read_only_fields = fields
 
 
-class UserAddressSerializer(serializers.ModelSerializer):
+class UserAddressOutputSerializer(CountryFieldMixin, serializers.ModelSerializer):
     class Meta:
         model = UserAddress
         fields = (
@@ -57,11 +33,28 @@ class UserAddressSerializer(serializers.ModelSerializer):
             "city",
             "postalcode",
         )
+        read_only_fields = fields
+
+
+class RegistrationOutputSerializer(serializers.ModelSerializer):
+
+    user = UserOutputSerializer(many=False, read_only=True)
+    address = UserAddressOutputSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = (
+            "user",
+            "phone_number",
+            "birthday",
+            "address",
+        )
+        read_only_fields = fields
 
 
 class UserProfileListOutputSerializer(serializers.ModelSerializer):
     user = UserOutputSerializer(many=False, required=True)
-    address = UserAddressSerializer(many=True)
+    address = UserAddressOutputSerializer(many=True)
     url = serializers.HyperlinkedIdentityField(
         view_name="user-detail", lookup_field="account_id"
     )
@@ -75,11 +68,12 @@ class UserProfileListOutputSerializer(serializers.ModelSerializer):
             "endpoint",
             "url",
         )
+        read_only_fields = fields
 
 
-class UserDetailOutputSerializer(serializers.ModelSerializer):
+class UserProfileDetailOutputSerializer(serializers.ModelSerializer):
     user = UserOutputSerializer(many=False, required=True)
-    address = UserAddressSerializer(many=True)
+    address = UserAddressOutputSerializer(many=True)
     created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
@@ -95,18 +89,40 @@ class UserDetailOutputSerializer(serializers.ModelSerializer):
             "created",
             "updated",
         )
+        read_only_fields = fields
 
 
-class RegistrationInputSerializer(serializers.ModelSerializer):
+class UserAddressInputSerializer(serializers.Serializer):
+    address_1 = serializers.CharField()
+    address_2 = serializers.CharField(required=False)
+    country = CountryField()
+    state = serializers.CharField(required=False)
+    city = serializers.CharField()
+    postalcode = serializers.CharField()
 
-    user = UserInputSerializer(many=False, required=True)
-    address = UserAddressSerializer(many=False)
 
-    class Meta:
-        model = UserProfile
-        fields = (
-            "user",
-            "phone_number",
-            "birthday",
-            "address",
-        )
+class UserInputSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(), message="Email already in use!"
+            )
+        ]
+    )
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        help_text="Leave empty if no change needed",
+        style={"input_type": "password", "placeholder": "Password"},
+    )
+
+
+class RegistrationInputSerializer(serializers.Serializer):
+
+    user = UserInputSerializer(required=True)
+    phone_number = serializers.CharField()
+    birthday = serializers.DateField()
+    address = UserAddressInputSerializer()

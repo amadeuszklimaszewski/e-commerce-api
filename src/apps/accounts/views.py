@@ -1,13 +1,16 @@
-from rest_framework import generics
-from rest_framework import permissions
+from rest_framework import permissions, generics, status
+from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
-from .models import UserAddress, UserProfile
-from .serializers import (
+
+from src.apps.accounts.models import UserAddress, UserProfile
+from src.apps.accounts.serializers import (
     RegistrationInputSerializer,
-    UserAddressSerializer,
+    UserAddressOutputSerializer,
     UserProfileListOutputSerializer,
-    UserDetailOutputSerializer,
+    UserProfileDetailOutputSerializer,
+    RegistrationOutputSerializer,
 )
+from src.apps.accounts.services import UserRegistrationService
 
 
 class UserProfileListAPIView(generics.ListAPIView):
@@ -17,19 +20,30 @@ class UserProfileListAPIView(generics.ListAPIView):
     lookup_field = "pk"
 
 
-class UserProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+class UserProfileRetrieveAPIView(generics.RetrieveAPIView):
     queryset = UserProfile.objects.all()
-    serializer_class = UserDetailOutputSerializer
+    serializer_class = UserProfileDetailOutputSerializer
     lookup_field = "account_id"
 
 
-class RegistrationCreateAPIView(generics.CreateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = RegistrationInputSerializer
+class UserRegisterAPIView(generics.CreateAPIView):
+    serializer_class = RegistrationOutputSerializer
     permission_classes = [permissions.AllowAny]
+    service_class = UserRegistrationService
+
+    def create(self, request, *args, **kwargs):
+        serializer = RegistrationInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_profile = self.service_class.register_user(serializer.validated_data)
+        # user=request.user
+        return Response(
+            self.get_serializer(user_profile).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class AdressListCreateAPIView(generics.ListCreateAPIView):
     queryset = UserAddress.objects.all()
-    serializer_class = UserAddressSerializer
+    serializer_class = UserAddressOutputSerializer
     permission_classes = [permissions.IsAuthenticated]
