@@ -36,7 +36,6 @@ class UserRegisterAPIView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         user_profile = self.service_class.register_user(serializer.validated_data)
-        # user=request.user
         return Response(
             self.get_serializer(user_profile).data,
             status=status.HTTP_201_CREATED,
