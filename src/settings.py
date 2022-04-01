@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     # local
     "src.apps.accounts",
+    "src.apps.products",
 ]
 
 MIDDLEWARE = [

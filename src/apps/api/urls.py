@@ -1,6 +1,7 @@
-from django.urls import include, re_path, path
-from rest_framework.routers import DefaultRouter
+from django.urls import include, path
+
 
 urlpatterns = [
     path("accounts/", include("src.apps.accounts.urls")),
+    path("products/", include("src.apps.products.urls")),
 ]

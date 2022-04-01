@@ -7,6 +7,12 @@ User = get_user_model()
 
 
 class UserRegistrationService:
+    """
+    Service used for registration of a User.
+    Creates instances of User, Address and UserProfile
+    with validated data and links them together.
+    """
+
     @classmethod
     def _create_user(cls, data: dict) -> User:
         user = User.objects.create(**data)
