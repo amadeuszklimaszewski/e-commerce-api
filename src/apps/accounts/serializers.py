@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django_countries.serializers import CountryFieldMixin
 from django_countries.serializer_fields import CountryField
-from .models import UserAddress, UserProfile
+from src.apps.accounts.models import UserAddress, UserProfile
 
 
 User = get_user_model()
@@ -89,8 +89,8 @@ class RegistrationInputSerializer(serializers.Serializer):
 
 
 class UserProfileListOutputSerializer(serializers.ModelSerializer):
-    user = UserOutputSerializer(many=False, required=True)
-    address = UserAddressOutputSerializer(many=True)
+    user = UserOutputSerializer(many=False, read_only=True)
+    address = UserAddressOutputSerializer(many=True, read_only=True)
     url = serializers.HyperlinkedIdentityField(
         view_name="user-detail", lookup_field="account_id"
     )
@@ -108,8 +108,8 @@ class UserProfileListOutputSerializer(serializers.ModelSerializer):
 
 
 class UserProfileDetailOutputSerializer(serializers.ModelSerializer):
-    user = UserOutputSerializer(many=False, required=True)
-    address = UserAddressOutputSerializer(many=True)
+    user = UserOutputSerializer(many=False, read_only=True)
+    address = UserAddressOutputSerializer(many=True, read_only=True)
     created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 

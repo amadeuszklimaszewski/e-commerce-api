@@ -31,6 +31,9 @@ class ProductInventory(models.Model):
     def get_availability(self) -> str:
         pass
 
+    def __str__(self) -> str:
+        return f"Available stock : {self.quantity} || {self.product.name}"
+
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
