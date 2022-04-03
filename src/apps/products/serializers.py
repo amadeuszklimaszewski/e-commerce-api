@@ -1,4 +1,3 @@
-from pkg_resources import PkgResourcesDeprecationWarning
 from rest_framework import serializers
 from src.apps.products.models import ProductCategory, ProductInventory, Product
 
@@ -81,7 +80,7 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
 
 
 class ProductInlineOutputSerializer(serializers.ModelSerializer):
-    quantity = serializers.IntegerField(source="inventory.quantity", read_only=True)
+    # quantity = serializers.IntegerField(source="inventory.quantity", read_only=True)
     url = serializers.HyperlinkedIdentityField(
         view_name="product-detail", lookup_field="pk"
     )
@@ -91,7 +90,7 @@ class ProductInlineOutputSerializer(serializers.ModelSerializer):
         fields = (
             "name",
             "price",
-            "quantity",
+            "short_description",
             "endpoint",
             "url",
         )

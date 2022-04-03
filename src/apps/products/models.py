@@ -1,7 +1,10 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
 # from django.template.defaultfilters import slugify
 # from django.urls import reverse
+
+User = get_user_model()
 
 
 class ProductCategory(models.Model):
@@ -28,12 +31,12 @@ class ProductInventory(models.Model):
         verbose_name = "Inventory"
         verbose_name_plural = "Inventories"
 
+    def __str__(self) -> str:
+        return f"Available stock : {self.quantity} || {self.product.name}"
+
     @property
     def get_availability(self) -> str:
         pass
-
-    def __str__(self) -> str:
-        return f"Available stock : {self.quantity} || {self.product.name}"
 
 
 class Product(models.Model):
@@ -46,6 +49,7 @@ class Product(models.Model):
 
     short_description = models.CharField(max_length=1000, blank=True, null=True)
     long_description = models.TextField(blank=True, null=True)
+
     # TODO research about most optimal way of serving and storing images
     # image = models.FieldFile()
     # TODO research about slugs and consider implementing them
@@ -64,6 +68,9 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Product"
         verbose_name_plural = "Products"
+
+    def __str__(self) -> str:
+        return self.name
 
     def set_discount(self, percentage: float):
         self.discount_price = self.price * (1 - percentage)
@@ -88,5 +95,15 @@ class Product(models.Model):
     #     kwargs = {"slug": self.slug}
     #     return reverse("product_detail", kwargs=kwargs)
 
+
+class ProductReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
+    description = models.TextField()
+    rating = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self) -> str:
-        return self.name
+        return f"Review of {self.product.name} | Author: {self.user.username}"
