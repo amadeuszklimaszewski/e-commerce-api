@@ -34,7 +34,7 @@ class ProductInventoryOutputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductInventory
-        fields = ("quantity", "updated")
+        fields = ("quantity", "sold", "updated")
         read_only_fields = fields
 
 

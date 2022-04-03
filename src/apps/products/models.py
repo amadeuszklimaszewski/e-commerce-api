@@ -20,6 +20,7 @@ class ProductCategory(models.Model):
 
 class ProductInventory(models.Model):
     quantity = models.IntegerField()
+    sold = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
