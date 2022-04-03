@@ -8,8 +8,7 @@ User = get_user_model()
 
 
 class ProductCategory(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=50, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -106,4 +105,4 @@ class ProductReview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"Review of {self.product.name} | Author: {self.user.username}"
+        return f"Review of {self.product.name} || Author: {self.user.username}"

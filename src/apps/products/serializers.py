@@ -79,29 +79,11 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class ProductInlineOutputSerializer(serializers.ModelSerializer):
-    # quantity = serializers.IntegerField(source="inventory.quantity", read_only=True)
-    url = serializers.HyperlinkedIdentityField(
-        view_name="product-detail", lookup_field="pk"
-    )
-
-    class Meta:
-        model = Product
-        fields = (
-            "name",
-            "price",
-            "short_description",
-            "endpoint",
-            "url",
-        )
-
-
 class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
     created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    products = ProductInlineOutputSerializer(many=True)
 
     class Meta:
         model = ProductCategory
-        fields = ("name", "description", "created", "updated", "products")
+        fields = ("name", "created", "updated")
         read_only_fields = fields

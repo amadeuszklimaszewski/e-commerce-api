@@ -41,3 +41,11 @@ class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategoryListOutputSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def create(self, request, *args, **kwargs):
+        serializer = ProductCategoryInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        category = ProductCategory.objects.create(**serializer.validated_data)
+        return Response(
+            self.get_serializer(category).data, status=status.HTTP_201_CREATED
+        )
