@@ -5,7 +5,6 @@ from src.apps.products.models import ProductCategory, ProductInventory, Product
 
 class ProductCategoryInputSerializer(serializers.Serializer):
     name = serializers.CharField()
-    description = serializers.CharField(required=False)
 
 
 class ProductInventoryInputSerializer(serializers.Serializer):
@@ -14,22 +13,19 @@ class ProductInventoryInputSerializer(serializers.Serializer):
 
 class ProductInputSerializer(serializers.Serializer):
     name = serializers.CharField()
-    price = serializers.FloatField(initial=0, allow_null=True)
-    weight = serializers.FloatField(initial=0, allow_null=True, required=False)
+    price = serializers.FloatField(default=0, allow_null=True)
+    weight = serializers.FloatField(default=0, allow_null=True, required=False)
     short_description = serializers.CharField(required=False)
     long_description = serializers.CharField(required=False)
 
-    category = serializers.ModelField(model_field=ProductCategory)
+    category = ProductCategoryInputSerializer(many=False)
     inventory = ProductInventoryInputSerializer(many=False, required=True)
 
 
 class ProductCategoryOutputSerializer(serializers.ModelSerializer):
-    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    # products = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = ProductCategory
-        fields = ("name", "description", "created", "updated")
+        fields = ("name",)
         read_only_fields = fields
 
 
@@ -81,4 +77,32 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
             "created",
             "updated",
         )
+        read_only_fields = fields
+
+
+class ProductInlineOutputSerializer(serializers.ModelSerializer):
+    quantity = serializers.IntegerField(source="inventory.quantity", read_only=True)
+    url = serializers.HyperlinkedIdentityField(
+        view_name="product-detail", lookup_field="pk"
+    )
+
+    class Meta:
+        model = Product
+        fields = (
+            "name",
+            "price",
+            "quantity",
+            "endpoint",
+            "url",
+        )
+
+
+class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
+    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    products = ProductInlineOutputSerializer(many=True)
+
+    class Meta:
+        model = ProductCategory
+        fields = ("name", "description", "created", "updated", "products")
         read_only_fields = fields
