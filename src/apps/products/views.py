@@ -6,7 +6,6 @@ from src.apps.products.models import Product, ProductCategory, ProductInventory
 from src.apps.products.serializers import (
     ProductCategoryListOutputSerializer,
     ProductInputSerializer,
-    ProductInventoryInputSerializer,
     ProductCategoryInputSerializer,
     ProductListOutputSerializer,
     ProductDetailOutputSerializer,
@@ -34,7 +33,22 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailOutputSerializer
     permission_classes = [permissions.IsAdminUser]
+    service_class = ProductService
     lookup_field = "pk"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = ProductInputSerializer(
+            instance=instance, data=request.data, partial=False
+        )
+        serializer.is_valid(raise_exception=True)
+        updated_product = self.service_class.update_product(
+            instance, serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(updated_product).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):

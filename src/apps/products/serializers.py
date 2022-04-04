@@ -47,6 +47,7 @@ class ProductListOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
+            "id",
             "name",
             "price",
             "inventory",
@@ -66,6 +67,7 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
+            "id",
             "name",
             "short_description",
             "long_description",
