@@ -14,9 +14,10 @@ from src.apps.products.serializers import (
     ProductCategoryInputSerializer,
     ProductListOutputSerializer,
     ProductDetailOutputSerializer,
+    ProductReviewInputSerializer,
     ProductReviewOutputSerializer,
 )
-from src.apps.products.services import ProductService
+from src.apps.products.services import ProductService, ReviewService
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
@@ -75,3 +76,13 @@ class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductReview.objects.all()
     serializer_class = ProductReviewOutputSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    service_class = ReviewService
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        serializer = ProductReviewInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        review = self.service_class.create_review(user, serializer.validated_data)
+        return Response(
+            self.get_serializer(review).data, status=status.HTTP_201_CREATED
+        )

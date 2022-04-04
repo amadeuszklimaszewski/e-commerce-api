@@ -1,6 +1,15 @@
 from django.db import transaction
-from src.apps.products.models import ProductCategory, ProductInventory, Product
-from src.apps.products.serializers import ProductInventoryInputSerializer
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from src.apps.products.models import (
+    ProductCategory,
+    ProductInventory,
+    Product,
+    ProductReview,
+)
+
+
+User = get_user_model()
 
 
 class ProductService:
@@ -48,3 +57,14 @@ class ProductService:
         )
         instance.save()
         return instance
+
+
+class ReviewService:
+    @classmethod
+    @transaction.atomic
+    def create_review(cls, user: User, validated_data: dict) -> ProductReview:
+        product_name = validated_data.pop("product_name")
+        product_instance = get_object_or_404(Product, name=product_name)
+        ProductReview.objects.create(
+            user=user, product=product_instance, **validated_data
+        )

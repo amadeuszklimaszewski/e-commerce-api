@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from src.apps.products.models import (
     ProductCategory,
@@ -92,8 +93,16 @@ class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategory
-        fields = ("name", "created", "updated")
+        fields = ("id", "name", "created", "updated")
         read_only_fields = fields
+
+
+class ProductReviewInputSerializer(serializers.Serializer):
+    product_name = serializers.CharField()
+    description = serializers.CharField()
+    rating = serializers.FloatField(
+        validators=[MaxValueValidator(5), MinValueValidator(0)]
+    )
 
 
 class ProductReviewOutputSerializer(serializers.ModelSerializer):
@@ -103,6 +112,7 @@ class ProductReviewOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductReview
         fields = (
+            "id",
             "username",
             "product_name",
             "description",
