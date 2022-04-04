@@ -65,6 +65,7 @@ class ReviewService:
     def create_review(cls, user: User, validated_data: dict) -> ProductReview:
         product_name = validated_data.pop("product_name")
         product_instance = get_object_or_404(Product, name=product_name)
-        ProductReview.objects.create(
+        review = ProductReview.objects.create(
             user=user, product=product_instance, **validated_data
         )
+        return review
