@@ -9,8 +9,9 @@ from src.apps.accounts.serializers import (
     UserProfileListOutputSerializer,
     UserProfileDetailOutputSerializer,
     RegistrationOutputSerializer,
+    UserProfileUpdateInputSerializer,
 )
-from src.apps.accounts.services import UserRegistrationService
+from src.apps.accounts.services import UserProfileService
 
 
 class UserProfileListAPIView(generics.ListAPIView):
@@ -20,16 +21,30 @@ class UserProfileListAPIView(generics.ListAPIView):
     lookup_field = "pk"
 
 
-class UserProfileRetrieveAPIView(generics.RetrieveAPIView):
+class UserProfileUpdateRetrieveAPIView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileDetailOutputSerializer
+    service_class = UserProfileService
     lookup_field = "account_id"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = UserProfileUpdateInputSerializer(
+            instance=instance, data=request.data, partial=False
+        )
+        serializer.is_valid(raise_exception=True)
+        updated_userprofile = self.service_class.update_user(
+            instance, serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(updated_userprofile).data, status=status.HTTP_200_OK
+        )
 
 
 class UserRegisterAPIView(generics.CreateAPIView):
     serializer_class = RegistrationOutputSerializer
     permission_classes = [permissions.AllowAny]
-    service_class = UserRegistrationService
+    service_class = UserProfileService
 
     def create(self, request, *args, **kwargs):
         serializer = RegistrationInputSerializer(data=request.data)

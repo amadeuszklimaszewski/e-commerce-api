@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -75,7 +76,6 @@ class UserInputSerializer(serializers.Serializer):
     password = serializers.CharField(
         write_only=True,
         required=True,
-        help_text="Leave empty if no change needed",
         style={"input_type": "password", "placeholder": "Password"},
     )
 
@@ -86,6 +86,19 @@ class RegistrationInputSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
     birthday = serializers.DateField()
     address = UserAddressInputSerializer()
+
+
+class UserUpdateInputSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField()
+
+
+class UserProfileUpdateInputSerializer(serializers.Serializer):
+    user = UserUpdateInputSerializer(required=False)
+    phone_number = serializers.CharField(required=False)
+    birthday = serializers.DateField(required=False)
+    address = UserAddressInputSerializer(many=True, required=False)
 
 
 class UserProfileListOutputSerializer(serializers.ModelSerializer):

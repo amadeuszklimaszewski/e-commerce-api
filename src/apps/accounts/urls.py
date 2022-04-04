@@ -3,7 +3,7 @@ from .views import (
     AdressListCreateAPIView,
     UserRegisterAPIView,
     UserProfileListAPIView,
-    UserProfileRetrieveAPIView,
+    UserProfileUpdateRetrieveAPIView,
 )
 
 urlpatterns = [
@@ -11,7 +11,7 @@ urlpatterns = [
     path("users/", UserProfileListAPIView.as_view()),
     path(
         "users/<uuid:account_id>/",
-        UserProfileRetrieveAPIView.as_view(),
+        UserProfileUpdateRetrieveAPIView.as_view(),
         name="user-detail",
     ),
     path("registration/", UserRegisterAPIView.as_view()),
