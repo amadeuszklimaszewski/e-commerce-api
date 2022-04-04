@@ -2,13 +2,19 @@ from pkg_resources import PkgResourcesDeprecationWarning
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 
-from src.apps.products.models import Product, ProductCategory, ProductInventory
+from src.apps.products.models import (
+    Product,
+    ProductCategory,
+    ProductInventory,
+    ProductReview,
+)
 from src.apps.products.serializers import (
     ProductCategoryListOutputSerializer,
     ProductInputSerializer,
     ProductCategoryInputSerializer,
     ProductListOutputSerializer,
     ProductDetailOutputSerializer,
+    ProductReviewOutputSerializer,
 )
 from src.apps.products.services import ProductService
 
@@ -63,3 +69,9 @@ class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):
         return Response(
             self.get_serializer(category).data, status=status.HTTP_201_CREATED
         )
+
+
+class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
+    queryset = ProductReview.objects.all()
+    serializer_class = ProductReviewOutputSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]

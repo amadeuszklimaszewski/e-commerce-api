@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from src.apps.products.models import ProductCategory, ProductInventory, Product
+from src.apps.products.models import (
+    ProductCategory,
+    ProductInventory,
+    Product,
+    ProductReview,
+)
 
 
 class ProductCategoryInputSerializer(serializers.Serializer):
@@ -88,4 +93,21 @@ class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         fields = ("name", "created", "updated")
+        read_only_fields = fields
+
+
+class ProductReviewOutputSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+
+    class Meta:
+        model = ProductReview
+        fields = (
+            "username",
+            "product_name",
+            "description",
+            "rating",
+            "created",
+            "updated",
+        )
         read_only_fields = fields

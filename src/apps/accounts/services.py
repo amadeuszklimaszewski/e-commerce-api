@@ -52,7 +52,6 @@ class UserProfileService:
                 pk=address.get("id"), defaults=address
             )
             address_ids.append(address_instance.pk)
-            # address_instance.save()
         return address_ids
 
     @classmethod
