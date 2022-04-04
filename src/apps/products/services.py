@@ -1,5 +1,6 @@
 from django.db import transaction
 from src.apps.products.models import ProductCategory, ProductInventory, Product
+from src.apps.products.serializers import ProductInventoryInputSerializer
 
 
 class ProductService:
@@ -12,9 +13,7 @@ class ProductService:
     def create_product(cls, validated_data: dict) -> Product:
         inventory_data = validated_data.pop("inventory")
         category_data = validated_data.pop("category")
-        print(inventory_data)
-        print(category_data)
-        print(validated_data)
+
         inventory = ProductInventory.objects.create(**inventory_data)
         category, created = ProductCategory.objects.get_or_create(**category_data)
 
@@ -29,9 +28,12 @@ class ProductService:
         inventory_data = validated_data.pop("inventory")
         category_data = validated_data.pop("category")
 
-        instance.inventory_quantity = inventory_data.get(
-            "quantity", instance.inventory.quantity
+        inventory_instance = instance.inventory
+        inventory_instance.quantity = inventory_data.get(
+            "quantity", inventory_instance.quantity
         )
+        inventory_instance.save()
+
         instance.name = validated_data.get("name", instance.name)
         instance.price = validated_data.get("price", instance.price)
         instance.weight = validated_data.get("weight", instance.weight)
