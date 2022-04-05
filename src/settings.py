@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # local
     "src.apps.accounts",
     "src.apps.products",
+    "src.apps.orders",
 ]
 
 MIDDLEWARE = [
