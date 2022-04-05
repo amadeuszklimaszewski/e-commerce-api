@@ -29,3 +29,40 @@ class CouponOutputSerializers(serializers.ModelSerializer):
             "updated",
         )
         read_only_fields = fields
+
+
+class CartItemInputSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    quantity = serializers.IntegerField()
+
+
+class CartItemOutputSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField(source="product.id", read_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = (
+            "id",
+            "product_id",
+            "quantity",
+            "total_item_price",
+            "total_discount_item_price",
+            "amount_saved",
+            "final_price",
+        )
+        read_only_fields = fields
+
+
+class CartOutputSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    cart_items = CartItemOutputSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = (
+            "id",
+            "username",
+            "cart_items",
+            "total",
+        )
+        read_only_fields = fields

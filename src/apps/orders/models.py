@@ -10,12 +10,17 @@ User = get_user_model()
 class Cart(models.Model):
     # id, create an order using current data and .cart_items for .order_items
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart")
-    total = models.FloatField(default=0.0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"Cart {self.pk} of user {self.user.username}. Total: ${self.total}"
+
+    @property
+    def total(self):
+        cartitems = self.cart_items.all()
+        total = sum(item.final_price for item in cartitems)
+        return total
 
 
 class CartItem(models.Model):

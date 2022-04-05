@@ -9,10 +9,12 @@ from src.apps.orders.models import (
     Coupon,
 )
 from src.apps.orders.serializers import (
+    CartOutputSerializer,
     CouponInputSerializer,
     CouponOutputSerializers,
 )
 from src.apps.orders.services import CouponService
+from src.apps.orders.permissions import OwnCartPermission
 
 
 class CouponListCreateAPIView(generics.ListCreateAPIView):
@@ -48,3 +50,24 @@ class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
             self.get_serializer(coupon).data,
             status=status.HTTP_200_OK,
         )
+
+
+class CartListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartOutputSerializer
+    permission_classes = [OwnCartPermission]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        cart = Cart.objects.create(user=user)
+        return Response(
+            self.get_serializer(cart).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class CartDetailAPIView(generics.RetrieveDestroyAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartOutputSerializer
+    permission_classes = [OwnCartPermission]
+    lookup_field = "pk"
