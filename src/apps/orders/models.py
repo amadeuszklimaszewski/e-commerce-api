@@ -29,6 +29,24 @@ class CartItem(models.Model):
     def __str__(self) -> str:
         return f"Item of {self.cart.pk} cart. Quantity: {self.quantity}"
 
+    @property
+    def total_item_price(self) -> float:
+        return self.quantity * self.product.price
+
+    @property
+    def total_discount_item_price(self) -> float:
+        return self.quantity * self.product.discount_price
+
+    @property
+    def amount_saved(self) -> float:
+        return self.total_item_price - self.total_discount_item_price
+
+    @property
+    def final_price(self) -> float:
+        if self.product.discount_price:
+            return self.total_discount_item_price
+        return self.total_item_price
+
 
 # ----------- # ----------- # ----------- # ----------- #
 
@@ -86,3 +104,21 @@ class OrderItem(models.Model):
 
     def __str__(self) -> str:
         return f"Item of {self.order.pk} order. Quantity: {self.quantity}"
+
+    @property
+    def total_item_price(self) -> float:
+        return self.quantity * self.product.price
+
+    @property
+    def total_discount_item_price(self) -> float:
+        return self.quantity * self.product.discount_price
+
+    @property
+    def amount_saved(self) -> float:
+        return self.total_item_price - self.total_discount_item_price
+
+    @property
+    def final_price(self) -> float:
+        if self.product.discount_price:
+            return self.total_discount_item_price
+        return self.total_item_price

@@ -69,9 +69,7 @@ class UserProfileService:
         for field in fields:
             try:
                 setattr(instance, field, validated_data[field])
-            except (
-                Error := KeyError
-            ):  # validated_data may not contain all fields during HTTP PATCH
+            except (Error := KeyError):
                 raise Error(f"{Error} : Missing data")
         instance.save()
 

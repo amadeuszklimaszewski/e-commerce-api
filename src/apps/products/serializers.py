@@ -8,6 +8,12 @@ from src.apps.products.models import (
 )
 
 
+class DiscountInputSerializer(serializers.Serializer):
+    percentage = serializers.FloatField(
+        default=0.0, validators=[MaxValueValidator(100), MinValueValidator(0)]
+    )
+
+
 class ProductCategoryInputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
@@ -22,7 +28,7 @@ class ProductInputSerializer(serializers.Serializer):
     weight = serializers.FloatField(default=0, allow_null=True, required=False)
     short_description = serializers.CharField(required=False)
     long_description = serializers.CharField(required=False)
-
+    discount = DiscountInputSerializer(default=0.0, required=False)
     category = ProductCategoryInputSerializer(many=False)
     inventory = ProductInventoryInputSerializer(many=False, required=True)
 
@@ -56,6 +62,7 @@ class ProductListOutputSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "price",
+            "discount_price",
             "inventory",
             "category",
             "endpoint",
@@ -78,6 +85,7 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
             "short_description",
             "long_description",
             "price",
+            "discount_price",
             "weight",
             "inventory",
             "category",

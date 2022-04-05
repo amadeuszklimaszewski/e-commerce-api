@@ -22,6 +22,7 @@ class ProductService:
     def create_product(cls, validated_data: dict) -> Product:
         inventory_data = validated_data.pop("inventory")
         category_data = validated_data.pop("category")
+        discount_data = validated_data.pop("discount")
 
         inventory = ProductInventory.objects.create(**inventory_data)
         category, created = ProductCategory.objects.get_or_create(**category_data)
@@ -29,6 +30,8 @@ class ProductService:
         product = Product.objects.create(
             inventory=inventory, category=category, **validated_data
         )
+        if percentage := discount_data.get("percentage", None):
+            product.set_discount(percentage)
         return product
 
     @classmethod
@@ -36,6 +39,7 @@ class ProductService:
     def update_product(cls, instance: Product, validated_data: dict) -> Product:
         inventory_data = validated_data.pop("inventory")
         category_data = validated_data.pop("category")
+        discount_data = validated_data.pop("discount")
 
         inventory_instance = instance.inventory
         inventory_instance.quantity = inventory_data.get(
@@ -43,19 +47,21 @@ class ProductService:
         )
         inventory_instance.save()
 
-        instance.name = validated_data.get("name", instance.name)
-        instance.price = validated_data.get("price", instance.price)
-        instance.weight = validated_data.get("weight", instance.weight)
-        instance.short_description = validated_data.get(
-            "short_description", instance.short_description
-        )
-        instance.long_description = validated_data.get(
-            "long_description", instance.long_description
-        )
+        fields = ["name", "price", "weight", "short_description", "long_description"]
+        for field in fields:
+            try:
+                setattr(instance, field, validated_data[field])
+            except (Error := KeyError):
+                raise Error(f"{Error} : Missing data")
+
         instance.category, created = ProductCategory.objects.get_or_create(
             **category_data
         )
         instance.save()
+        if discount_data:
+            if percentage := discount_data.get("percentage", None):
+                instance.set_discount(percentage)
+
         return instance
 
 

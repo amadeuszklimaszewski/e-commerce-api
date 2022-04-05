@@ -72,7 +72,7 @@ class Product(models.Model):
         return self.name
 
     def set_discount(self, percentage: float):
-        self.discount_price = self.price * (1 - percentage)
+        self.discount_price = round((self.price * (1 - percentage / 100)), 2)
         self.save()
 
     @property
