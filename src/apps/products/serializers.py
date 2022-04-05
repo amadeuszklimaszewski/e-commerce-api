@@ -63,6 +63,8 @@ class ProductListOutputSerializer(serializers.ModelSerializer):
             "name",
             "price",
             "discount_price",
+            "avg_rating",
+            "review_count",
             "inventory",
             "category",
         )
@@ -84,6 +86,8 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
             "long_description",
             "price",
             "discount_price",
+            "avg_rating",
+            "review_count",
             "weight",
             "inventory",
             "category",

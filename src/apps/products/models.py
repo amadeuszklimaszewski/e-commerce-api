@@ -83,6 +83,14 @@ class Product(models.Model):
         self.discount_price = None
         self.save()
 
+    @property
+    def avg_rating(self):
+        return self.reviews.aggregate(models.Avg("rating")).get("rating__avg")
+
+    @property
+    def review_count(self):
+        return self.reviews.count()
+
     def get_absolute_url(self) -> str:
         return f"/api/products/{self.pk}/"
 
