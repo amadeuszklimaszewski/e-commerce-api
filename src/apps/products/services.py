@@ -14,7 +14,7 @@ User = get_user_model()
 
 class ProductService:
     """
-    Service used for creating a product.
+    Service used to handle creation and update of product instances.
     """
 
     @classmethod

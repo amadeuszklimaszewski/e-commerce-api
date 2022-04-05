@@ -8,9 +8,9 @@ User = get_user_model()
 
 class UserProfileService:
     """
-    Service used for registration of a User.
-    Creates instances of User, Address and UserProfile
-    with validated data and links them together.
+    Service used for handling registration UserProfile and
+    updating it. Creates new addresses and delete those not used
+    in any UserProfile.
     """
 
     @classmethod

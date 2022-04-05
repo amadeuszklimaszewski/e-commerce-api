@@ -1,4 +1,3 @@
-from pkg_resources import PkgResourcesDeprecationWarning
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 
