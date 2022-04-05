@@ -36,7 +36,10 @@ class ProductInputSerializer(serializers.Serializer):
 class ProductCategoryOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = ("name",)
+        fields = (
+            "id",
+            "name",
+        )
         read_only_fields = fields
 
 
@@ -52,9 +55,6 @@ class ProductInventoryOutputSerializer(serializers.ModelSerializer):
 class ProductListOutputSerializer(serializers.ModelSerializer):
     inventory = ProductInventoryOutputSerializer(many=False, read_only=True)
     category = ProductCategoryOutputSerializer(many=False, read_only=True)
-    url = serializers.HyperlinkedIdentityField(
-        view_name="product-detail", lookup_field="pk"
-    )
 
     class Meta:
         model = Product
@@ -65,8 +65,6 @@ class ProductListOutputSerializer(serializers.ModelSerializer):
             "discount_price",
             "inventory",
             "category",
-            "endpoint",
-            "url",
         )
         read_only_fields = fields
 

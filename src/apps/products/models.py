@@ -90,10 +90,6 @@ class Product(models.Model):
     def endpoint(self) -> str:
         return self.get_absolute_url()
 
-    # def get_absolute_url(self):
-    #     kwargs = {"slug": self.slug}
-    #     return reverse("product_detail", kwargs=kwargs)
-
 
 class ProductReview(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")

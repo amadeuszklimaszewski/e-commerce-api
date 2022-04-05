@@ -30,8 +30,9 @@ class ProductService:
         product = Product.objects.create(
             inventory=inventory, category=category, **validated_data
         )
-        if percentage := discount_data.get("percentage", None):
-            product.set_discount(percentage)
+        if discount_data:
+            if percentage := discount_data.get("percentage", None):
+                product.set_discount(percentage)
         return product
 
     @classmethod
