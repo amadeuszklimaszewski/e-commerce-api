@@ -47,7 +47,7 @@ class CartItem(models.Model):
 
     @property
     def amount_saved(self) -> float:
-        return self.total_item_price - self.total_discount_item_price
+        return round(self.total_item_price - self.total_discount_item_price, 2)
 
     @property
     def final_price(self) -> float:

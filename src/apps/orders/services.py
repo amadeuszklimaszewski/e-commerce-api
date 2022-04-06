@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from ipaddress import collapse_addresses
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -9,6 +10,9 @@ from src.apps.orders.models import (
     CartItem,
     Coupon,
 )
+from src.apps.products.models import Product
+
+User = get_user_model()
 
 
 class CouponService:
@@ -31,3 +35,25 @@ class CouponService:
                 raise Error(f"{Error} : Missing data")
         instance.save()
         return instance
+
+
+class CartService:
+    @classmethod
+    @transaction.atomic
+    def create_cart_item(cls, cart_id: int, validated_data: dict) -> CartItem:
+        product_id = validated_data.pop("product_id")
+        quantity = validated_data.pop("quantity")
+        try:
+            cartitem = CartItem.objects.get(product_id=product_id)
+            cartitem.quantity += quantity
+            cartitem.save()
+        except CartItem.DoesNotExist:
+            product_instance = get_object_or_404(Product, id=product_id)
+            cart_instance = get_object_or_404(Cart, id=cart_id)
+            cartitem = CartItem.objects.create(
+                cart=cart_instance,
+                product=product_instance,
+                quantity=quantity,
+            )
+            cartitem.save()
+        return cartitem

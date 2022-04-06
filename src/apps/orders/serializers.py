@@ -32,8 +32,8 @@ class CouponOutputSerializers(serializers.ModelSerializer):
 
 
 class CartItemInputSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    quantity = serializers.IntegerField()
+    product_id = serializers.IntegerField()
+    quantity = serializers.IntegerField(default=1)
 
 
 class CartItemOutputSerializer(serializers.ModelSerializer):

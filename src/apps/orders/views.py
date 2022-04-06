@@ -1,4 +1,3 @@
-from django.http import QueryDict
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 
@@ -10,13 +9,14 @@ from src.apps.orders.models import (
     Coupon,
 )
 from src.apps.orders.serializers import (
+    CartItemInputSerializer,
     CartItemOutputSerializer,
     CartOutputSerializer,
     CouponInputSerializer,
     CouponOutputSerializers,
 )
-from src.apps.orders.services import CouponService
-from src.apps.orders.permissions import OwnerOrAdmin
+from src.apps.orders.services import CartService, CouponService
+from src.apps.orders.permissions import OwnerOrAdmin, CartOwnerOrAdmin
 
 
 class CouponListCreateAPIView(generics.ListCreateAPIView):
@@ -66,7 +66,7 @@ class CartListCreateAPIView(generics.ListCreateAPIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def get_queryset(self) -> QueryDict:
+    def get_queryset(self):
         qs = self.queryset.filter(user=self.request.user)
         print(type(qs))
         return qs
@@ -83,10 +83,21 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemOutputSerializer
     permission_classes = [OwnerOrAdmin]
+    service_class = CartService
     lookup_field = "pk"
 
     def get_queryset(self):
-        pk = self.kwargs.get("pk")
-        return CartItem.objects.filter(cart_id=pk)
+        cart_pk = self.kwargs.get("pk")
+        return CartItem.objects.filter(cart_id=cart_pk)
 
     def create(self, request, *args, **kwargs):
+        cart_id = self.kwargs.get("pk")
+        serializer = CartItemInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        cartitem = self.service_class.create_cart_item(
+            cart_id, serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(cartitem).data,
+            status=status.HTTP_201_CREATED,
+        )
