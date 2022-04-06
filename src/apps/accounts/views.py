@@ -1,6 +1,5 @@
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
 
 from src.apps.accounts.models import UserAddress, UserProfile
 from src.apps.accounts.serializers import (

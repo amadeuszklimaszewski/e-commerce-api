@@ -32,7 +32,7 @@ class CartItem(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"Item of {self.cart.pk} cart. Quantity: {self.quantity}"
+        return f"Item of cart #{self.cart.pk}. Quantity: {self.quantity}"
 
     @property
     def total_item_price(self) -> float:
@@ -40,7 +40,10 @@ class CartItem(models.Model):
 
     @property
     def total_discount_item_price(self) -> float:
-        return self.quantity * self.product.discount_price
+        if self.product.discount_price:
+            return self.quantity * self.product.discount_price
+        else:
+            return self.total_item_price
 
     @property
     def amount_saved(self) -> float:

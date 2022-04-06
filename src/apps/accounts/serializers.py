@@ -104,9 +104,6 @@ class UserProfileUpdateInputSerializer(serializers.Serializer):
 class UserProfileListOutputSerializer(serializers.ModelSerializer):
     user = UserOutputSerializer(many=False, read_only=True)
     address = UserAddressOutputSerializer(many=True, read_only=True)
-    url = serializers.HyperlinkedIdentityField(
-        view_name="user-detail", lookup_field="account_id"
-    )
 
     class Meta:
         model = UserProfile
@@ -114,8 +111,6 @@ class UserProfileListOutputSerializer(serializers.ModelSerializer):
             "user",
             "account_id",
             "address",
-            "endpoint",
-            "url",
         )
         read_only_fields = fields
 
@@ -131,7 +126,6 @@ class UserProfileDetailOutputSerializer(serializers.ModelSerializer):
         fields = (
             "user",
             "account_id",
-            "endpoint",
             "phone_number",
             "birthday",
             "address",
