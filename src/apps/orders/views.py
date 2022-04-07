@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 
@@ -11,6 +12,7 @@ from src.apps.orders.models import (
 from src.apps.orders.serializers import (
     CartItemInputSerializer,
     CartItemOutputSerializer,
+    CartItemQuantityInputSerializer,
     CartOutputSerializer,
     CouponInputSerializer,
     CouponOutputSerializers,
@@ -68,7 +70,6 @@ class CartListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = self.queryset.filter(user=self.request.user)
-        print(type(qs))
         return qs
 
 
@@ -82,7 +83,7 @@ class CartDetailAPIView(generics.RetrieveDestroyAPIView):
 class CartItemsListCreateAPIView(generics.ListCreateAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemOutputSerializer
-    permission_classes = [OwnerOrAdmin]
+    permission_classes = [CartOwnerOrAdmin]
     service_class = CartService
     lookup_field = "pk"
 
@@ -100,4 +101,35 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
         return Response(
             self.get_serializer(cartitem).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CartItem.objects.all()
+    serializer_class = CartItemOutputSerializer
+    permission_classes = [CartOwnerOrAdmin]
+    service_class = CartService
+
+    def get_queryset(self, *args, **kwargs):
+        cart_id = self.kwargs.get("pk")
+        qs = self.queryset.filter(cart__user=self.request.user)
+        return qs
+
+    def get_object(self):
+        id = self.kwargs.get("pk_cartitem")
+        instance = get_object_or_404(CartItem, id=id)
+        return instance
+
+    def update(self, request, *args, **kwargs):
+        cartitem_instance = self.get_object()
+        serializer = CartItemQuantityInputSerializer(
+            instance=cartitem_instance, data=request.data, partial=False
+        )
+        serializer.is_valid(raise_exception=True)
+        cartitem = self.service_class.update_cart_item(
+            cartitem_instance, serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(cartitem).data,
+            status=status.HTTP_200_OK,
         )

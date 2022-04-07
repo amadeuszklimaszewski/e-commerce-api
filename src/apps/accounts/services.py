@@ -9,7 +9,7 @@ User = get_user_model()
 class UserProfileService:
     """
     Service used for handling registration UserProfile and
-    updating it. Creates new addresses and delete those not used
+    updating it. Creates new addresses and delete those, not used
     in any UserProfile.
     """
 
@@ -69,8 +69,8 @@ class UserProfileService:
         for field in fields:
             try:
                 setattr(instance, field, validated_data[field])
-            except (Error := KeyError):
-                raise Error(f"{Error} : Missing data")
+            except KeyError as err:
+                raise err(f"{err} : Missing or wrong data")
         instance.save()
 
         # Removal of addresses not related to any UserProfile object

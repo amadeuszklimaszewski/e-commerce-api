@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from src.apps.orders.models import (
     Order,
@@ -33,7 +34,11 @@ class CouponOutputSerializers(serializers.ModelSerializer):
 
 class CartItemInputSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
-    quantity = serializers.IntegerField(default=1)
+    quantity = serializers.IntegerField(default=1, validators=[MinValueValidator(1)])
+
+
+class CartItemQuantityInputSerializer(serializers.Serializer):
+    quantity = serializers.IntegerField(default=1, validators=[MinValueValidator(0)])
 
 
 class CartItemOutputSerializer(serializers.ModelSerializer):

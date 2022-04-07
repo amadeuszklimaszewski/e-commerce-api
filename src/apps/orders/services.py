@@ -1,8 +1,7 @@
-from email.headerregistry import Address
-from ipaddress import collapse_addresses
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from src.apps.orders.models import (
     Order,
     OrderItem,
@@ -57,3 +56,38 @@ class CartService:
             )
             cartitem.save()
         return cartitem
+
+    # @classmethod
+    # @transaction.atomic
+    # def update_cart_item(cls, instance: CartItem, validated_data: dict) -> CartItem:
+    #     quantity = validated_data["quantity"]
+    #     try:
+    #         setattr(instance, "quantity", quantity)
+    #     except KeyError as err:
+    #         raise err(f"{err} : Missing or wrong data")
+    #     instance.save()
+    #     return instance
+
+    @classmethod
+    def _check_quantity(cls, instance: CartItem, quantity: int):
+        if quantity == 0:
+            instance.delete()
+            return "deleted"
+        if quantity > instance.product.inventory.quantity:
+            # raise ValidationError("Not enough products in stock.")
+            return "error"
+        return "valid"
+
+    @classmethod
+    @transaction.atomic
+    def update_cart_item(cls, instance: CartItem, validated_data: dict):
+        quantity = validated_data["quantity"]
+        output = cls._check_quantity(instance, quantity)
+        if output == "valid":
+            try:
+                setattr(instance, "quantity", quantity)
+            except KeyError as err:
+                raise err(f"{err} : Missing or wrong data")
+            instance.save()
+            return instance
+        return

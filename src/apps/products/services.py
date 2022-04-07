@@ -52,9 +52,8 @@ class ProductService:
         for field in fields:
             try:
                 setattr(instance, field, validated_data[field])
-            except (Error := KeyError):
-                raise Error(f"{Error} : Missing data")
-
+            except KeyError as err:
+                raise err(f"{err} : Missing or wrong data")
         instance.category, created = ProductCategory.objects.get_or_create(
             **category_data
         )
