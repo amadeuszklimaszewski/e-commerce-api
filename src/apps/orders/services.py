@@ -42,6 +42,9 @@ class CartService:
     def create_cart_item(cls, cart_id: int, validated_data: dict) -> CartItem:
         product_id = validated_data.pop("product_id")
         quantity = validated_data.pop("quantity")
+        product_instance = get_object_or_404(Product, id=product_id)
+        max_quantity = product_instance.inventory.quantity
+        validate_item_quantity(quantity, max_quantity)
         try:
             cartitem = CartItem.objects.get(product_id=product_id, cart_id=cart_id)
             cartitem.quantity += quantity

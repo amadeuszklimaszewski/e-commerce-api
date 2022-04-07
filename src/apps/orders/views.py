@@ -60,6 +60,10 @@ class CartListCreateAPIView(generics.ListCreateAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartOutputSerializer
 
+    def get_queryset(self):
+        qs = self.queryset.filter(user=self.request.user)
+        return qs
+
     def create(self, request, *args, **kwargs):
         user = request.user
         cart = Cart.objects.create(user=user)
@@ -67,10 +71,6 @@ class CartListCreateAPIView(generics.ListCreateAPIView):
             self.get_serializer(cart).data,
             status=status.HTTP_201_CREATED,
         )
-
-    def get_queryset(self):
-        qs = self.queryset.filter(user=self.request.user)
-        return qs
 
 
 class CartDetailAPIView(generics.RetrieveDestroyAPIView):
@@ -108,12 +108,11 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     service_class = CartService
 
     # def get_queryset(self):
-    #     id = self.kwargs.get("cart_item_pk")
     #     cart_id = self.kwargs.get("pk")
     #     qs = self.queryset
     #     if self.request.user.is_superuser:
     #         return qs
-    #     return qs.filter(id=id, cart__user=self.request.user, cart_id=cart_id)
+    #     return qs.filter(cart__user=self.request.user, cart_id=cart_id)
 
     def get_object(self):
         id = self.kwargs.get("cart_item_pk")
