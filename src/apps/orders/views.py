@@ -89,7 +89,7 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         cart_pk = self.kwargs.get("pk")
-        return CartItem.objects.filter(cart_id=cart_pk)
+        return CartItem.objects.filter(cart_id=cart_pk, cart__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         cart_id = self.kwargs.get("pk")
@@ -107,21 +107,40 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
 class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemOutputSerializer
-    permission_classes = [CartOwnerOrAdmin]
     service_class = CartService
 
-    def get_queryset(self, *args, **kwargs):
-        cart_id = self.kwargs.get("pk")
-        qs = self.queryset.filter(cart__user=self.request.user)
-        return qs
+    # def get_queryset(self):
+    #     cart_id = self.kwargs.get("pk")
+    #     qs = self.queryset
+    #     if self.request.user.is_superuser:
+    #         return qs
+    #     return qs.filter(cart__user=self.request.user, cart_id=cart_id)
+
+    # def get(self, *args, **kwargs):
+    #     id = self.kwargs.get("cart_item_pk")
+    #     cart_id = self.kwargs.get("pk")
+    #     user = self.request.user
+    #     instance = get_object_or_404(CartItem, id=id, cart_id=cart_id, cart__user=user)
+    #     return Response(
+    #         self.get_serializer(instance).data,
+    #         status=status.HTTP_200_OK,
+    #     )
 
     def get_object(self):
-        id = self.kwargs.get("pk_cartitem")
-        instance = get_object_or_404(CartItem, id=id)
+        id = self.kwargs.get("cart_item_pk")
+        cart_id = self.kwargs.get("pk")
+        user = self.request.user
+        instance = get_object_or_404(CartItem, id=id, cart_id=cart_id, cart__user=user)
         return instance
 
     def update(self, request, *args, **kwargs):
-        cartitem_instance = self.get_object()
+        cartitem_instance = self.get_object
+        # id = self.kwargs.get("cart_item_pk")
+        # cart_id = self.kwargs.get("pk")
+        # user = self.request.user
+        # cartitem_instance = get_object_or_404(
+        #     CartItem, id=id, cart_id=cart_id, cart__user=user
+        # )
         serializer = CartItemQuantityInputSerializer(
             instance=cartitem_instance, data=request.data, partial=False
         )

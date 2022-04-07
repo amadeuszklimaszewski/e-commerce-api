@@ -1,7 +1,6 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
 from src.apps.orders.models import (
     Order,
     OrderItem,
@@ -9,6 +8,7 @@ from src.apps.orders.models import (
     CartItem,
     Coupon,
 )
+from src.apps.orders.validators import validate_item_quantity
 from src.apps.products.models import Product
 
 User = get_user_model()
@@ -43,7 +43,7 @@ class CartService:
         product_id = validated_data.pop("product_id")
         quantity = validated_data.pop("quantity")
         try:
-            cartitem = CartItem.objects.get(product_id=product_id)
+            cartitem = CartItem.objects.get(product_id=product_id, cart_id=cart_id)
             cartitem.quantity += quantity
             cartitem.save()
         except CartItem.DoesNotExist:
@@ -57,33 +57,20 @@ class CartService:
             cartitem.save()
         return cartitem
 
-    # @classmethod
-    # @transaction.atomic
-    # def update_cart_item(cls, instance: CartItem, validated_data: dict) -> CartItem:
-    #     quantity = validated_data["quantity"]
-    #     try:
-    #         setattr(instance, "quantity", quantity)
-    #     except KeyError as err:
-    #         raise err(f"{err} : Missing or wrong data")
-    #     instance.save()
-    #     return instance
-
     @classmethod
     def _check_quantity(cls, instance: CartItem, quantity: int):
         if quantity == 0:
             instance.delete()
-            return "deleted"
-        if quantity > instance.product.inventory.quantity:
-            # raise ValidationError("Not enough products in stock.")
-            return "error"
-        return "valid"
+            return False
+        return True
 
     @classmethod
     @transaction.atomic
     def update_cart_item(cls, instance: CartItem, validated_data: dict):
         quantity = validated_data["quantity"]
-        output = cls._check_quantity(instance, quantity)
-        if output == "valid":
+        max_quantity = instance.product.inventory.quantity
+        validate_item_quantity(quantity, max_quantity)
+        if cls._check_quantity(instance, quantity):
             try:
                 setattr(instance, "quantity", quantity)
             except KeyError as err:
