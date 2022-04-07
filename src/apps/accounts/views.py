@@ -17,7 +17,6 @@ class UserProfileListAPIView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileListOutputSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = "pk"
 
 
 class UserProfileUpdateRetrieveAPIView(generics.RetrieveUpdateAPIView):

@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
@@ -41,7 +42,6 @@ class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = CouponOutputSerializers
     permission_classes = [permissions.IsAdminUser]
     service_class = CouponService
-    lookup_field = "pk"
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -77,7 +77,6 @@ class CartDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartOutputSerializer
     permission_classes = [OwnerOrAdmin]
-    lookup_field = "pk"
 
 
 class CartItemsListCreateAPIView(generics.ListCreateAPIView):
@@ -85,7 +84,6 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CartItemOutputSerializer
     permission_classes = [CartOwnerOrAdmin]
     service_class = CartService
-    lookup_field = "pk"
 
     def get_queryset(self):
         cart_pk = self.kwargs.get("pk")
@@ -110,21 +108,12 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     service_class = CartService
 
     # def get_queryset(self):
+    #     id = self.kwargs.get("cart_item_pk")
     #     cart_id = self.kwargs.get("pk")
     #     qs = self.queryset
     #     if self.request.user.is_superuser:
     #         return qs
-    #     return qs.filter(cart__user=self.request.user, cart_id=cart_id)
-
-    # def get(self, *args, **kwargs):
-    #     id = self.kwargs.get("cart_item_pk")
-    #     cart_id = self.kwargs.get("pk")
-    #     user = self.request.user
-    #     instance = get_object_or_404(CartItem, id=id, cart_id=cart_id, cart__user=user)
-    #     return Response(
-    #         self.get_serializer(instance).data,
-    #         status=status.HTTP_200_OK,
-    #     )
+    #     return qs.filter(id=id, cart__user=self.request.user, cart_id=cart_id)
 
     def get_object(self):
         id = self.kwargs.get("cart_item_pk")
@@ -135,12 +124,6 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         cartitem_instance = self.get_object()
-        # id = self.kwargs.get("cart_item_pk")
-        # cart_id = self.kwargs.get("pk")
-        # user = self.request.user
-        # cartitem_instance = get_object_or_404(
-        #     CartItem, id=id, cart_id=cart_id, cart__user=user
-        # )
         serializer = CartItemQuantityInputSerializer(
             instance=cartitem_instance, data=request.data, partial=False
         )

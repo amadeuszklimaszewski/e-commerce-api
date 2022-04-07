@@ -40,7 +40,6 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailOutputSerializer
     permission_classes = [permissions.IsAdminUser]
     service_class = ProductService
-    lookup_field = "pk"
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
