@@ -134,7 +134,7 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return instance
 
     def update(self, request, *args, **kwargs):
-        cartitem_instance = self.get_object
+        cartitem_instance = self.get_object()
         # id = self.kwargs.get("cart_item_pk")
         # cart_id = self.kwargs.get("pk")
         # user = self.request.user
