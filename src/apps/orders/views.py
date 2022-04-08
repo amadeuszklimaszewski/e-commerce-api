@@ -188,3 +188,8 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             self.get_serializer(updated_product).data,
             status=status.HTTP_200_OK,
         )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.service_class.destroy_order(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

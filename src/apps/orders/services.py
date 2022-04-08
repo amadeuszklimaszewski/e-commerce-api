@@ -140,6 +140,7 @@ class OrderService:
         return order
 
     @classmethod
+    @transaction.atomic
     def update_order(cls, instance: Order, user: User, validated_data: dict) -> Order:
         if "coupon_code" in validated_data.keys():
             coupon = get_object_or_404(
@@ -158,3 +159,13 @@ class OrderService:
         )
         instance.save()
         return instance
+
+    @classmethod
+    @transaction.atomic
+    def destroy_order(cls, instance: Order):
+        orderitems = instance.order_items.all()
+        for orderitem in orderitems:
+            inventory_instance = orderitem.product.inventory
+            inventory_instance.quantity += orderitem.quantity
+            inventory_instance.save()
+        instance.delete()
