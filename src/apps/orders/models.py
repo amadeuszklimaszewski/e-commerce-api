@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from src.apps.accounts.models import UserAddress
+from src.apps.accounts.models import UserAddress, UserProfile
 from src.apps.products.models import Product
 
 User = get_user_model()
@@ -98,6 +98,21 @@ class Order(models.Model):
 
     def __str__(self) -> str:
         return f"Order #{self.pk} by user {self.user.username}."
+
+    @property
+    def before_coupon(self):
+        orderitems = self.order_items.all()
+        total = sum(item.final_price for item in orderitems)
+        if discount := self.coupon.amount:
+            total = total - discount
+        return total
+
+    @property
+    def total(self):
+        total = self.before_coupon
+        if discount := self.coupon.amount:
+            total = total - discount
+        return total
 
 
 class OrderItem(models.Model):

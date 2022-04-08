@@ -59,3 +59,6 @@ class AdressListCreateAPIView(generics.ListCreateAPIView):
     queryset = UserAddress.objects.all()
     serializer_class = UserAddressOutputSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(userprofile__user=self.request.user)

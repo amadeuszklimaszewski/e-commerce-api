@@ -26,7 +26,7 @@ class UserProfile(models.Model):
     account_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     phone_number = PhoneNumberField()
     birthday = models.DateField()
-    address = models.ManyToManyField(UserAddress)
+    address = models.ManyToManyField(UserAddress, related_name="userprofile")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

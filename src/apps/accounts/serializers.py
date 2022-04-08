@@ -27,6 +27,7 @@ class UserAddressOutputSerializer(CountryFieldMixin, serializers.ModelSerializer
     class Meta:
         model = UserAddress
         fields = (
+            "id",
             "address_1",
             "address_2",
             "country",
@@ -132,4 +133,13 @@ class UserProfileDetailOutputSerializer(serializers.ModelSerializer):
             "created",
             "updated",
         )
+        read_only_fields = fields
+
+
+class UserOrderOutputSerializer(serializers.ModelSerializer):
+    user = UserOutputSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ("user", "account_id", "phone_number")
         read_only_fields = fields

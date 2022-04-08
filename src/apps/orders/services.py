@@ -1,6 +1,8 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
+from src.apps.accounts.models import UserAddress
 from src.apps.orders.models import (
     Order,
     OrderItem,
@@ -81,3 +83,50 @@ class CartService:
             instance.save()
             return instance
         return
+
+
+class OrderService:
+    @classmethod
+    def _create_order_items(cls, order_instance: Order, cart_items):
+        """
+        Creates OrderItems based on CartItems and adds them to
+        """
+        for cartitem in cart_items:
+            product_id = cartitem.product.id
+            product = get_object_or_404(Product, id=product_id)
+
+            quantity = cartitem.quantity
+            max_quantity = product.inventory.quantity
+            validate_item_quantity(quantity, max_quantity)
+            OrderItem.objects.create(
+                order=order_instance, product=product, quantity=quantity
+            )
+            product.inventory.quantity = product.inventory.quantity - quantity
+            product.save()
+        return
+
+    @classmethod
+    @transaction.atomic
+    def create_order(cls, cart_id: int, user: User, validated_data: dict) -> Order:
+        """
+        Creates an Order instance and returns it.
+        After creation, cart is deleted.
+        """
+        coupon = get_object_or_404(
+            Coupon, code=validated_data["coupon_code"], is_active=True
+        )
+        address_instance = get_object_or_404(
+            UserAddress, id=validated_data["address_id"], userprofile__user=user
+        )
+        cart_instance = get_object_or_404(Cart, id=cart_id, user=user)
+
+        order = Order.objects.create(user=user, address=address_instance, coupon=coupon)
+
+        cartitems = cart_instance.cart_items.all()
+        cls._create_order_items(order_instance=order, cart_items=cartitems)
+        cart_instance.delete()
+        return order
+
+    @classmethod
+    def update_order(cls, instance: Order, user: User, validated_data: dict) -> Order:
+        pass

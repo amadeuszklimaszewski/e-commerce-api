@@ -45,7 +45,10 @@ class UserProfileService:
         return user_instance
 
     @classmethod
-    def _update_address(cls, address_data: list) -> UserAddress:
+    def _update_address(cls, address_data) -> list:
+        """
+        Returns list of indexes of created/updated UserAdresses.
+        """
         address_ids = []
         for address in address_data:
             address_instance, created = UserAddress.objects.update_or_create(

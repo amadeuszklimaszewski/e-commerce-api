@@ -17,8 +17,10 @@ from src.apps.orders.serializers import (
     CartOutputSerializer,
     CouponInputSerializer,
     CouponOutputSerializers,
+    OrderInputSerializer,
+    OrderOutputSerializer,
 )
-from src.apps.orders.services import CartService, CouponService
+from src.apps.orders.services import CartService, CouponService, OrderService
 from src.apps.orders.permissions import OwnerOrAdmin, CartOwnerOrAdmin
 
 
@@ -108,6 +110,7 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     service_class = CartService
 
     # def get_queryset(self):
+    #     id = self.kwargs.get("cart_item_pk")
     #     cart_id = self.kwargs.get("pk")
     #     qs = self.queryset
     #     if self.request.user.is_superuser:
@@ -134,3 +137,33 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             self.get_serializer(cartitem).data,
             status=status.HTTP_200_OK,
         )
+
+
+class OrderCreateAPIView(generics.CreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderOutputSerializer
+    service_class = OrderService
+
+    def create(self, request, *args, **kwargs):
+        cart_id = self.kwargs.get("pk")
+        serializer = OrderInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order = self.service_class.create_order(
+            cart_id=cart_id,
+            user=self.request.user,
+            validated_data=serializer.validated_data,
+        )
+        return Response(
+            self.get_serializer(order).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class OrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderOutputSerializer
+
+
+class OrderDetailAPIView(generics.RetrieveAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderOutputSerializer
