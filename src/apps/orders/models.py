@@ -104,8 +104,6 @@ class Order(models.Model):
     def before_coupon(self):
         orderitems = self.order_items.all()
         total = sum(item.final_price for item in orderitems)
-        if self.coupon:
-            total = total - self.coupon.amount
         return total
 
     @property

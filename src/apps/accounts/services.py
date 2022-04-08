@@ -15,7 +15,10 @@ class UserProfileService:
 
     @classmethod
     def _create_user(cls, data: dict) -> User:
+        password = data.pop("password")
         user = User.objects.create(**data)
+        user.set_password(password)
+        user.save()
         return user
 
     @classmethod
@@ -28,7 +31,6 @@ class UserProfileService:
     def register_user(cls, validated_data: dict) -> UserProfile:
         user_data = validated_data.pop("user")
         address_data = validated_data.pop("address")
-
         user = cls._create_user(user_data)
         address = cls._create_address(address_data)
 

@@ -163,7 +163,28 @@ class OrderListAPIView(generics.ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderOutputSerializer
 
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderOutputSerializer
+    service_class = OrderService
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = OrderInputSerializer(
+            instance=instance, data=request.data, partial=False
+        )
+        serializer.is_valid(raise_exception=True)
+        updated_product = self.service_class.update_order(
+            instance, self.request.user, serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(updated_product).data,
+            status=status.HTTP_200_OK,
+        )

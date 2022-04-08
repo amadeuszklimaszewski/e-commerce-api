@@ -134,10 +134,27 @@ class OrderService:
             order.coupon = coupon
             order.save()
         else:
-            coupon = None
+            order.coupon = None
+            order.save()
         cart_instance.delete()
         return order
 
     @classmethod
     def update_order(cls, instance: Order, user: User, validated_data: dict) -> Order:
-        pass
+        if "coupon_code" in validated_data.keys():
+            coupon = get_object_or_404(
+                Coupon, code=validated_data["coupon_code"], is_active=True
+            )
+            validate_coupon_total(
+                total=instance.before_coupon, min_total=coupon.min_order_total
+            )
+            instance.coupon = coupon
+            instance.save()
+        else:
+            instance.coupon = None
+            instance.save()
+        instance.address = get_object_or_404(
+            UserAddress, id=validated_data["address_id"], userprofile__user=user
+        )
+        instance.save()
+        return instance
