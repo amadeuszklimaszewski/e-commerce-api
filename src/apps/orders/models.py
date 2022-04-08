@@ -36,7 +36,7 @@ class CartItem(models.Model):
 
     @property
     def total_item_price(self) -> float:
-        return self.quantity * self.product.price
+        return round(self.quantity * self.product.price, 2)
 
     @property
     def total_discount_item_price(self) -> float:
@@ -62,6 +62,7 @@ class CartItem(models.Model):
 class Coupon(models.Model):
     code = models.CharField(max_length=50)
     amount = models.IntegerField()
+    min_order_total = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
 
     created = models.DateTimeField(auto_now_add=True)
@@ -103,15 +104,16 @@ class Order(models.Model):
     def before_coupon(self):
         orderitems = self.order_items.all()
         total = sum(item.final_price for item in orderitems)
-        if discount := self.coupon.amount:
-            total = total - discount
+        if self.coupon:
+            total = total - self.coupon.amount
         return total
 
     @property
     def total(self):
         total = self.before_coupon
-        if discount := self.coupon.amount:
-            total = total - discount
+        if self.coupon:
+            if discount := self.coupon.amount:
+                total = total - discount
         return total
 
 
@@ -134,7 +136,10 @@ class OrderItem(models.Model):
 
     @property
     def total_discount_item_price(self) -> float:
-        return self.quantity * self.product.discount_price
+        if self.product.discount_price:
+            return self.quantity * self.product.discount_price
+        else:
+            return self.total_item_price
 
     @property
     def amount_saved(self) -> float:

@@ -30,9 +30,20 @@ class CouponOutputSerializers(serializers.ModelSerializer):
             "id",
             "code",
             "amount",
+            "min_order_total",
             "is_active",
             "created",
             "updated",
+        )
+        read_only_fields = fields
+
+
+class CouponOrderOutputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coupon
+        fields = (
+            "code",
+            "amount",
         )
         read_only_fields = fields
 
@@ -83,7 +94,7 @@ class CartOutputSerializer(serializers.ModelSerializer):
 
 
 class OrderInputSerializer(serializers.Serializer):
-    coupon_code = serializers.CharField()
+    coupon_code = serializers.CharField(required=False)
     address_id = serializers.IntegerField(validators=[MinValueValidator(1)])
 
 
@@ -108,8 +119,9 @@ class OrderOutputSerializer(serializers.ModelSerializer):
     userprofile = UserOrderOutputSerializer(
         source="user.userprofile", many=False, read_only=True
     )
-    coupon = serializers.CharField(source="coupon.code")
+    coupon = CouponOrderOutputSerializer(many=False, read_only=True)
     address = UserAddressOutputSerializer(many=False, read_only=True)
+    order_items = OrderItemOutputSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -125,6 +137,7 @@ class OrderOutputSerializer(serializers.ModelSerializer):
             "order_accepted",
             "being_delivered",
             "received",
+            "order_items",
             "created",
             "updated",
         )

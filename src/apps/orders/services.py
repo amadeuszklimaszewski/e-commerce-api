@@ -10,7 +10,7 @@ from src.apps.orders.models import (
     CartItem,
     Coupon,
 )
-from src.apps.orders.validators import validate_item_quantity
+from src.apps.orders.validators import validate_item_quantity, validate_coupon_total
 from src.apps.products.models import Product
 
 User = get_user_model()
@@ -89,7 +89,7 @@ class OrderService:
     @classmethod
     def _create_order_items(cls, order_instance: Order, cart_items):
         """
-        Creates OrderItems based on CartItems and adds them to
+        Creates OrderItems based on CartItems and adds them to Order.
         """
         for cartitem in cart_items:
             product_id = cartitem.product.id
@@ -101,8 +101,9 @@ class OrderService:
             OrderItem.objects.create(
                 order=order_instance, product=product, quantity=quantity
             )
-            product.inventory.quantity = product.inventory.quantity - quantity
-            product.save()
+            inventory_instance = product.inventory
+            inventory_instance.quantity = inventory_instance.quantity - quantity
+            inventory_instance.save()
         return
 
     @classmethod
@@ -112,18 +113,28 @@ class OrderService:
         Creates an Order instance and returns it.
         After creation, cart is deleted.
         """
-        coupon = get_object_or_404(
-            Coupon, code=validated_data["coupon_code"], is_active=True
-        )
         address_instance = get_object_or_404(
             UserAddress, id=validated_data["address_id"], userprofile__user=user
         )
         cart_instance = get_object_or_404(Cart, id=cart_id, user=user)
 
-        order = Order.objects.create(user=user, address=address_instance, coupon=coupon)
+        order = Order.objects.create(user=user, address=address_instance)
 
-        cartitems = cart_instance.cart_items.all()
-        cls._create_order_items(order_instance=order, cart_items=cartitems)
+        cls._create_order_items(
+            order_instance=order, cart_items=cart_instance.cart_items.all()
+        )
+
+        if "coupon_code" in validated_data.keys():
+            coupon = get_object_or_404(
+                Coupon, code=validated_data["coupon_code"], is_active=True
+            )
+            validate_coupon_total(
+                total=order.before_coupon, min_total=coupon.min_order_total
+            )
+            order.coupon = coupon
+            order.save()
+        else:
+            coupon = None
         cart_instance.delete()
         return order
 
