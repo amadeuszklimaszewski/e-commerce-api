@@ -1,5 +1,5 @@
-from typing_extensions import Required
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django_countries.serializers import CountryFieldMixin
@@ -64,7 +64,13 @@ class UserAddressInputSerializer(serializers.Serializer):
 
 
 class UserInputSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(), message="Username already in use!"
+            )
+        ]
+    )
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     email = serializers.EmailField(
@@ -79,6 +85,18 @@ class UserInputSerializer(serializers.Serializer):
         required=True,
         style={"input_type": "password", "placeholder": "Password"},
     )
+    repeat_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={"input_type": "password", "placeholder": "Password"},
+    )
+
+    def validate(self, data):
+        if data["password"] != data["repeat_password"]:
+            raise serializers.ValidationError(
+                _("The two password fields didn't match.")
+            )
+        return data
 
 
 class RegistrationInputSerializer(serializers.Serializer):

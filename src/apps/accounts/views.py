@@ -18,12 +18,26 @@ class UserProfileListAPIView(generics.ListAPIView):
     serializer_class = UserProfileListOutputSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(user=user)
+
 
 class UserProfileUpdateRetrieveAPIView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileDetailOutputSerializer
     service_class = UserProfileService
     lookup_field = "account_id"
+
+    def get_queryset(self):
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(user=user)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -61,4 +75,8 @@ class AdressListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(userprofile__user=self.request.user)
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(userprofile__user=user)

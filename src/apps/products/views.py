@@ -17,7 +17,7 @@ from src.apps.products.serializers import (
     ProductReviewOutputSerializer,
 )
 from src.apps.products.services import ProductService, ReviewService
-from src.apps.core.permissions import AdminOrReadOnly
+from src.core.permissions import AdminOrReadOnly
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):

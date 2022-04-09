@@ -8,3 +8,5 @@ django-countries==7.3.2
 django-phonenumber-field==6.1.0
 django-phonenumbers==1.0.1
 django-jazzmin==2.5.0
+dj-rest-auth==2.2.4
+djangorestframework-simplejwt==5.1.0
