@@ -17,12 +17,13 @@ from src.apps.products.serializers import (
     ProductReviewOutputSerializer,
 )
 from src.apps.products.services import ProductService, ReviewService
+from src.apps.core.permissions import AdminOrReadOnly
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListOutputSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [AdminOrReadOnly]
     service_class = ProductService
 
     def create(self, request, *args, **kwargs):
@@ -38,7 +39,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailOutputSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [AdminOrReadOnly]
     service_class = ProductService
 
     def update(self, request, *args, **kwargs):

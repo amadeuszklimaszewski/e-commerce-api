@@ -1,11 +1,9 @@
-from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 
 from src.apps.orders.models import (
     Order,
-    OrderItem,
     Cart,
     CartItem,
     Coupon,
@@ -29,6 +27,12 @@ class CouponListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CouponOutputSerializers
     permission_classes = [permissions.IsAdminUser]
 
+    def get_queryset(self):
+        qs = self.queryset
+        if self.request.user.is_superuser:
+            return qs
+        return qs.none()
+
     def create(self, request, *args, **kwargs):
         serializer = CouponInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -44,6 +48,12 @@ class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = CouponOutputSerializers
     permission_classes = [permissions.IsAdminUser]
     service_class = CouponService
+
+    def get_queryset(self):
+        qs = self.queryset
+        if self.request.user.is_superuser:
+            return qs
+        return qs.none()
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -80,6 +90,9 @@ class CartDetailAPIView(generics.RetrieveDestroyAPIView):
     serializer_class = CartOutputSerializer
     permission_classes = [OwnerOrAdmin]
 
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
 
 class CartItemsListCreateAPIView(generics.ListCreateAPIView):
     queryset = CartItem.objects.all()
@@ -109,20 +122,13 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartItemOutputSerializer
     service_class = CartService
 
-    # def get_queryset(self):
-    #     id = self.kwargs.get("cart_item_pk")
-    #     cart_id = self.kwargs.get("pk")
-    #     qs = self.queryset
-    #     if self.request.user.is_superuser:
-    #         return qs
-    #     return qs.filter(cart__user=self.request.user, cart_id=cart_id)
-
     def get_object(self):
         id = self.kwargs.get("cart_item_pk")
         cart_id = self.kwargs.get("pk")
         user = self.request.user
-        instance = get_object_or_404(CartItem, id=id, cart_id=cart_id, cart__user=user)
-        return instance
+        obj = get_object_or_404(CartItem, id=id, cart_id=cart_id, cart__user=user)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def update(self, request, *args, **kwargs):
         cartitem_instance = self.get_object()
