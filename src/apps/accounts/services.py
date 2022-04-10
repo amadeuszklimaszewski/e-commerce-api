@@ -30,6 +30,7 @@ class UserProfileService:
     @transaction.atomic
     def register_user(cls, validated_data: dict) -> UserProfile:
         user_data = validated_data.pop("user")
+        user_data.pop("repeat_password")
         address_data = validated_data.pop("address")
         user = cls._create_user(user_data)
         address = cls._create_address(address_data)

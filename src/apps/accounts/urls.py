@@ -4,8 +4,6 @@ from dj_rest_auth.views import (
     LoginView,
     LogoutView,
     PasswordChangeView,
-    PasswordResetConfirmView,
-    PasswordResetView,
 )
 from src.apps.accounts.views import (
     AdressListCreateAPIView,
@@ -22,18 +20,10 @@ urlpatterns = [
         name="user-detail",
     ),
     path("register/", UserRegisterAPIView.as_view()),
+    path("login/", LoginView.as_view(), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path("password/change/", PasswordChangeView.as_view(), name="password_change"),
     path("addresses/", AdressListCreateAPIView.as_view()),
-    # dj-rest-auth
-    path("password/reset/", PasswordResetView.as_view(), name="rest_password_reset"),
-    path(
-        "password/reset/confirm/",
-        PasswordResetConfirmView.as_view(),
-        name="rest_password_reset_confirm",
-    ),
-    path("login/", LoginView.as_view(), name="rest_login"),
-    # URLs that require a user to be logged in with a valid session / token.
-    path("logout/", LogoutView.as_view(), name="rest_logout"),
-    path("password/change/", PasswordChangeView.as_view(), name="rest_password_change"),
 ]
 
 if getattr(settings, "REST_USE_JWT", False):

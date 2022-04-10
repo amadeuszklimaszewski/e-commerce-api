@@ -52,8 +52,6 @@ class Product(models.Model):
 
     # TODO research about most optimal way of serving and storing images
     # image = models.FieldFile()
-    # TODO research about slugs and consider implementing them
-    # slug = models.SlugField(max_length=100, null=False, unique=True)
 
     category = models.ForeignKey(
         ProductCategory, on_delete=models.SET_NULL, null=True, related_name="products"
