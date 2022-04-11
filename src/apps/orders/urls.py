@@ -10,6 +10,10 @@ from src.apps.orders.views import (
     OrderDetailAPIView,
     OrderListAPIView,
 )
+from src.apps.payments.views import (
+    StripeSessionView,
+    StripeConfigView,
+)
 
 urlpatterns = [
     path("coupons/", CouponListCreateAPIView.as_view()),
@@ -21,4 +25,6 @@ urlpatterns = [
     path("carts/<int:pk>/order/", OrderCreateAPIView.as_view()),
     path("orders/", OrderListAPIView.as_view()),
     path("orders/<int:pk>/", OrderDetailAPIView.as_view()),
+    path("orders/<int:pk>/session/", StripeSessionView.as_view()),
+    path("orders/stripe/", StripeConfigView.as_view()),
 ]

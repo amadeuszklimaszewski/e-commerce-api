@@ -39,6 +39,12 @@ class CouponService:
 
 
 class CartService:
+    """
+    Service for managing carts. Creating and updating cart items checks quantity
+    available in product's inventory and in case of deficiency, raises ValidationError.
+    When updating, if the quantity is equal to 0, it removes the item from the cart.
+    """
+
     @classmethod
     @transaction.atomic
     def create_cart_item(cls, cart_id: int, validated_data: dict) -> CartItem:
@@ -88,9 +94,6 @@ class CartService:
 class OrderService:
     @classmethod
     def _create_order_items(cls, order_instance: Order, cart_items):
-        """
-        Creates OrderItems based on CartItems and adds them to Order.
-        """
         for cartitem in cart_items:
             product_id = cartitem.product.id
             product = get_object_or_404(Product, id=product_id)
@@ -109,10 +112,7 @@ class OrderService:
     @classmethod
     @transaction.atomic
     def create_order(cls, cart_id: int, user: User, validated_data: dict) -> Order:
-        """
-        Creates an Order instance and returns it.
-        After creation, cart is deleted.
-        """
+
         address_instance = get_object_or_404(
             UserAddress, id=validated_data["address_id"], userprofile__user=user
         )
@@ -154,6 +154,7 @@ class OrderService:
         else:
             instance.coupon = None
             instance.save()
+
         instance.address = get_object_or_404(
             UserAddress, id=validated_data["address_id"], userprofile__user=user
         )

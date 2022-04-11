@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "phonenumbers",
     "phonenumber_field",
     "dj_rest_auth",
+    "corsheaders",
     "rest_framework_simplejwt",
     # local
     "src.apps.accounts",
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -166,3 +168,8 @@ SIMPLE_JWT = {
 
 JWT_AUTH_COOKIE = "my-app-auth"
 JWT_AUTH_REFRESH_COOKIE = "my-refresh-token"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3030",
+    "https://checkout.stripe.com",
+]
