@@ -46,7 +46,7 @@ class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
         )
         serializer.is_valid(raise_exception=True)
         updated_userprofile = self.service_class.update_user(
-            instance, serializer.validated_data
+            instance=instance, data=serializer.validated_data
         )
         return Response(
             self.get_serializer(updated_userprofile).data, status=status.HTTP_200_OK
@@ -62,7 +62,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         serializer = RegistrationInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user_profile = self.service_class.register_user(serializer.validated_data)
+        user_profile = self.service_class.register_user(data=serializer.validated_data)
         return Response(
             self.get_serializer(user_profile).data,
             status=status.HTTP_201_CREATED,

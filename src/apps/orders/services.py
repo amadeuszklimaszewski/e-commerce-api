@@ -1,8 +1,9 @@
+from typing import Any
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from src.apps.accounts.models import UserAddress
-from src.apps.orders.decorators import database_debug
+from src.core.decorators import database_debug
 from src.apps.orders.models import (
     Order,
     OrderItem,
@@ -23,7 +24,7 @@ class CouponService:
 
     @classmethod
     @transaction.atomic
-    def update_coupon(cls, instance: Coupon, validated_data: dict) -> Coupon:
+    def update_coupon(cls, instance: Coupon, data: dict[str, Any]) -> Coupon:
         fields = [
             "code",
             "amount",
@@ -31,7 +32,7 @@ class CouponService:
         ]
         for field in fields:
             try:
-                setattr(instance, field, validated_data[field])
+                setattr(instance, field, data[field])
             except (Error := KeyError):
                 raise Error(f"{Error} : Missing data")
         instance.save()
@@ -47,22 +48,24 @@ class CartService:
 
     @classmethod
     @transaction.atomic
-    def create_cart_item(cls, cart_id: int, validated_data: dict) -> CartItem:
-        product_id = validated_data.pop("product_id")
-        quantity = validated_data.pop("quantity")
-        product_instance = get_object_or_404(Product, id=product_id)
-        max_quantity = product_instance.inventory.quantity
+    def create_cart_item(cls, cart_id: int, data: dict[str, Any]) -> CartItem:
+        product_id = data.pop("product_id")
+        quantity = data.pop("quantity")
+
+        product = get_object_or_404(Product, id=product_id)
+        max_quantity = product.inventory.quantity
         validate_item_quantity(quantity, max_quantity)
+
         try:
             cartitem = CartItem.objects.get(product_id=product_id, cart_id=cart_id)
             cartitem.quantity += quantity
             cartitem.save()
         except CartItem.DoesNotExist:
-            product_instance = get_object_or_404(Product, id=product_id)
-            cart_instance = get_object_or_404(Cart, id=cart_id)
+            product = get_object_or_404(Product, id=product_id)
+            cart = get_object_or_404(Cart, id=cart_id)
             cartitem = CartItem.objects.create(
-                cart=cart_instance,
-                product=product_instance,
+                cart=cart,
+                product=product,
                 quantity=quantity,
             )
             cartitem.save()
@@ -77,11 +80,11 @@ class CartService:
 
     @classmethod
     @transaction.atomic
-    def update_cart_item(cls, instance: CartItem, validated_data: dict):
-        quantity = validated_data["quantity"]
+    def update_cart_item(cls, instance: CartItem, data: dict[str, Any]):
+        quantity = data["quantity"]
         max_quantity = instance.product.inventory.quantity
         validate_item_quantity(quantity, max_quantity)
-        if cls._check_quantity(instance, quantity):
+        if cls._check_quantity(instance=instance, quantity=quantity):
             try:
                 setattr(instance, "quantity", quantity)
             except KeyError as err:
@@ -106,7 +109,7 @@ class OrderService:
     """
 
     @classmethod
-    def _create_order_items(cls, order_instance: Order, cart_items):
+    def _create_order_items(cls, instance: Order, cart_items):
         for cartitem in cart_items:
             product = cartitem.product
             quantity = cartitem.quantity
@@ -114,50 +117,43 @@ class OrderService:
 
             validate_item_quantity(quantity, max_quantity)
 
-            OrderItem.objects.create(
-                order=order_instance, product=product, quantity=quantity
-            )
-            inventory_instance = product.inventory
-            inventory_instance.quantity = inventory_instance.quantity - quantity
-            inventory_instance.save()
+            OrderItem.objects.create(order=instance, product=product, quantity=quantity)
+            product_inventory = product.inventory
+            product_inventory.quantity = product_inventory.quantity - quantity
+            product_inventory.save()
         return
 
     @classmethod
     @transaction.atomic
-    @database_debug
-    def create_order(cls, cart_id: int, user: User, validated_data) -> Order:
+    def create_order(cls, cart_id: int, user: User, data: dict[str, Any]) -> Order:
 
-        address_instance = get_object_or_404(
-            UserAddress, id=validated_data["address_id"], userprofile__user=user
+        address = get_object_or_404(
+            UserAddress, id=data["address_id"], userprofile__user=user
         )
-        cart_instance = get_object_or_404(Cart, id=cart_id, user=user)
-        cart_items = cart_instance.cart_items.select_related(
+        cart = get_object_or_404(Cart, id=cart_id, user=user)
+        cart_items = cart.cart_items.select_related(
             "product", "product__inventory"
         ).all()
 
-        order = Order.objects.create(user=user, address=address_instance)
+        order = Order.objects.create(user=user, address=address)
 
-        cls._create_order_items(order_instance=order, cart_items=cart_items)
+        cls._create_order_items(instance=order, cart_items=cart_items)
 
-        if "coupon_code" in validated_data.keys():
-            coupon = get_object_or_404(
-                Coupon, code=validated_data["coupon_code"], is_active=True
-            )
+        if "coupon_code" in data.keys():
+            coupon = get_object_or_404(Coupon, code=data["coupon_code"], is_active=True)
             validate_coupon_total(
                 total=order.before_coupon, min_total=coupon.min_order_total
             )
             order.coupon = coupon
             order.save()
-        cart_instance.delete()
+        cart.delete()
         return order
 
     @classmethod
     @transaction.atomic
-    def update_order(cls, instance: Order, user: User, validated_data) -> Order:
-        if "coupon_code" in validated_data.keys():
-            coupon = get_object_or_404(
-                Coupon, code=validated_data["coupon_code"], is_active=True
-            )
+    def update_order(cls, instance: Order, user: User, data: dict[str, Any]) -> Order:
+        if "coupon_code" in data.keys():
+            coupon = get_object_or_404(Coupon, code=data["coupon_code"], is_active=True)
             validate_coupon_total(
                 total=instance.before_coupon, min_total=coupon.min_order_total
             )
@@ -168,7 +164,7 @@ class OrderService:
             instance.save()
 
         instance.address = get_object_or_404(
-            UserAddress, id=validated_data["address_id"], userprofile__user=user
+            UserAddress, id=data["address_id"], userprofile__user=user
         )
         instance.save()
         return instance
@@ -180,9 +176,9 @@ class OrderService:
             "product", "product__inventory"
         ).all()
         for orderitem in orderitems:
-            inventory_instance = orderitem.product.inventory
-            inventory_instance.quantity += orderitem.quantity
-            inventory_instance.save()
+            product_inventory = orderitem.product.inventory
+            product_inventory.quantity += orderitem.quantity
+            product_inventory.save()
         instance.delete()
         return
 
@@ -193,12 +189,8 @@ class OrderService:
             "product", "product__inventory"
         ).all()
         for orderitem in order_items:
-            product_id = orderitem.product.id
-            product = get_object_or_404(Product, id=product_id)
-            product_inventory = product.inventory
-
-            quantity = orderitem.quantity
-            product_inventory.sold += quantity
+            product_inventory = orderitem.product.inventory
+            product_inventory.sold += orderitem.quantity
             product_inventory.save()
         return
 

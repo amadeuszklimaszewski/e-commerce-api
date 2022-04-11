@@ -1,3 +1,4 @@
+from typing import Any
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
@@ -8,13 +9,13 @@ User = get_user_model()
 
 class UserProfileService:
     """
-    Service used for handling registration UserProfile and
-    updating it. Creates new addresses and delete those, not used
+    Service for managing registration of UserProfile and
+    updating it. Creates new addresses and deletes those, not used
     in any UserProfile.
     """
 
     @classmethod
-    def _create_user(cls, data: dict) -> User:
+    def _create_user(cls, data: dict[str, Any]) -> User:
         password = data.pop("password")
         user = User.objects.create(**data)
         user.set_password(password)
@@ -22,38 +23,39 @@ class UserProfileService:
         return user
 
     @classmethod
-    def _create_address(cls, data: dict) -> UserAddress:
+    def _create_address(cls, data: dict[str, Any]) -> UserAddress:
         address = UserAddress.objects.create(**data)
         return address
 
     @classmethod
     @transaction.atomic
-    def register_user(cls, validated_data: dict) -> UserProfile:
-        user_data = validated_data.pop("user")
+    def register_user(cls, data: dict[str, Any]) -> UserProfile:
+        user_data = data.pop("user")
         user_data.pop("repeat_password")
-        address_data = validated_data.pop("address")
-        user = cls._create_user(user_data)
-        address = cls._create_address(address_data)
+        address_data = data.pop("address")
 
-        user_profile = UserProfile.objects.create(user=user, **validated_data)
+        user = cls._create_user(data=user_data)
+        address = cls._create_address(data=address_data)
+
+        user_profile = UserProfile.objects.create(user=user, **data)
         user_profile.address.add(address)
         return user_profile
 
     @classmethod
-    def _update_user(cls, user_instance: User, user_data: dict) -> User:
-        user_instance.first_name = user_data.get("first_name", user_instance.first_name)
-        user_instance.last_name = user_data.get("last_name", user_instance.last_name)
-        user_instance.email = user_data.get("email", user_instance.email)
-        user_instance.save()
-        return user_instance
+    def _update_user(cls, instance: User, data: dict[str, Any]) -> User:
+        instance.first_name = data.get("first_name", instance.first_name)
+        instance.last_name = data.get("last_name", instance.last_name)
+        instance.email = data.get("email", instance.email)
+        instance.save()
+        return instance
 
     @classmethod
-    def _update_address(cls, address_data) -> list:
+    def _update_address(cls, data: dict[str, Any]) -> list:
         """
         Returns list of indexes of created/updated UserAdresses.
         """
         address_ids = []
-        for address in address_data:
+        for address in data:
             address_instance, created = UserAddress.objects.update_or_create(
                 pk=address.get("id"), defaults=address
             )
@@ -62,19 +64,19 @@ class UserProfileService:
 
     @classmethod
     @transaction.atomic
-    def update_user(cls, instance: UserProfile, validated_data: dict) -> UserProfile:
-        user_data = validated_data.pop("user")
-        address_data = validated_data.pop("address", [])
+    def update_user(cls, instance: UserProfile, data: dict[str, Any]) -> UserProfile:
+        user_data = data.pop("user")
+        address_data = data.pop("address", [])
 
-        user_instance = instance.user
-        cls._update_user(user_instance, user_data)
+        user = instance.user
+        cls._update_user(instance=user, data=user_data)
 
-        instance.address.set(cls._update_address(address_data))
+        instance.address.set(cls._update_address(data=address_data))
 
         fields = ["phone_number", "birthday"]
         for field in fields:
             try:
-                setattr(instance, field, validated_data[field])
+                setattr(instance, field, data[field])
             except KeyError as err:
                 raise err(f"{err} : Missing or wrong data")
         instance.save()

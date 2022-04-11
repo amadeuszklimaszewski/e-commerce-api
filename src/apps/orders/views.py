@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, generics, status
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from src.apps.orders.models import (
@@ -59,7 +59,9 @@ class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
             instance=instance, data=request.data, partial=False
         )
         serializer.is_valid(raise_exception=True)
-        coupon = self.service_class.update_coupon(instance, serializer.validated_data)
+        coupon = self.service_class.update_coupon(
+            instance=instance, data=serializer.validated_data
+        )
         return Response(
             self.get_serializer(coupon).data,
             status=status.HTTP_200_OK,
@@ -114,7 +116,7 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
         serializer = CartItemInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         cartitem = self.service_class.create_cart_item(
-            cart_id, serializer.validated_data
+            cart_id=cart_id, data=serializer.validated_data
         )
         return Response(
             self.get_serializer(cartitem).data,
@@ -136,13 +138,13 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return obj
 
     def update(self, request, *args, **kwargs):
-        cartitem_instance = self.get_object()
+        instance = self.get_object()
         serializer = CartItemQuantityInputSerializer(
-            instance=cartitem_instance, data=request.data, partial=False
+            instance=instance, data=request.data, partial=False
         )
         serializer.is_valid(raise_exception=True)
         cartitem = self.service_class.update_cart_item(
-            cartitem_instance, serializer.validated_data
+            istance=instance, data=serializer.validated_data
         )
         return Response(
             self.get_serializer(cartitem).data,
@@ -162,7 +164,7 @@ class OrderCreateAPIView(generics.CreateAPIView):
         order = self.service_class.create_order(
             cart_id=cart_id,
             user=self.request.user,
-            validated_data=serializer.validated_data,
+            data=serializer.validated_data,
         )
         return Response(
             self.get_serializer(order).data,
@@ -206,7 +208,7 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         )
         serializer.is_valid(raise_exception=True)
         updated_product = self.service_class.update_order(
-            instance, self.request.user, serializer.validated_data
+            instance=instance, user=self.request.user, data=serializer.validated_data
         )
         return Response(
             self.get_serializer(updated_product).data,

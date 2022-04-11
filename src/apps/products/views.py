@@ -36,7 +36,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = ProductInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        product = self.service_class.create_product(serializer.validated_data)
+        product = self.service_class.create_product(data=serializer.validated_data)
         return Response(
             self.get_serializer(product).data,
             status=status.HTTP_201_CREATED,
@@ -62,7 +62,7 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         )
         serializer.is_valid(raise_exception=True)
         updated_product = self.service_class.update_product(
-            instance, serializer.validated_data
+            instance=instance, data=serializer.validated_data
         )
         return Response(
             self.get_serializer(updated_product).data,
@@ -94,7 +94,9 @@ class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
         user = request.user
         serializer = ProductReviewInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        review = self.service_class.create_review(user, serializer.validated_data)
+        review = self.service_class.create_review(
+            user=user, data=serializer.validated_data
+        )
         return Response(
             self.get_serializer(review).data, status=status.HTTP_201_CREATED
         )

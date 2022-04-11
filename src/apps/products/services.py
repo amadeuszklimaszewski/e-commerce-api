@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -14,22 +15,20 @@ User = get_user_model()
 
 class ProductService:
     """
-    Service used to handle creation and update of product instances.
+    Service for managing creating and updating product instances.
     """
 
     @classmethod
     @transaction.atomic
-    def create_product(cls, validated_data: dict) -> Product:
-        inventory_data = validated_data.pop("inventory")
-        category_data = validated_data.pop("category")
-        discount_data = validated_data.pop("discount")
+    def create_product(cls, data: dict[str, Any]) -> Product:
+        inventory_data = data.pop("inventory")
+        category_data = data.pop("category")
+        discount_data = data.pop("discount")
 
         inventory = ProductInventory.objects.create(**inventory_data)
         category, created = ProductCategory.objects.get_or_create(**category_data)
 
-        product = Product.objects.create(
-            inventory=inventory, category=category, **validated_data
-        )
+        product = Product.objects.create(inventory=inventory, category=category, **data)
         if discount_data:
             if percentage := discount_data.get("percentage", None):
                 product.set_discount(percentage)
@@ -37,21 +36,19 @@ class ProductService:
 
     @classmethod
     @transaction.atomic
-    def update_product(cls, instance: Product, validated_data: dict) -> Product:
-        inventory_data = validated_data.pop("inventory")
-        category_data = validated_data.pop("category")
-        discount_data = validated_data.pop("discount")
+    def update_product(cls, instance: Product, data: dict[str, Any]) -> Product:
+        inventory_data = data.pop("inventory")
+        category_data = data.pop("category")
+        discount_data = data.pop("discount")
 
-        inventory_instance = instance.inventory
-        inventory_instance.quantity = inventory_data.get(
-            "quantity", inventory_instance.quantity
-        )
-        inventory_instance.save()
+        inventory = instance.inventory
+        inventory.quantity = inventory_data.get("quantity", inventory.quantity)
+        inventory.save()
 
         fields = ["name", "price", "weight", "short_description", "long_description"]
         for field in fields:
             try:
-                setattr(instance, field, validated_data[field])
+                setattr(instance, field, data[field])
             except KeyError as err:
                 raise err(f"{err} : Missing or wrong data")
         instance.category, created = ProductCategory.objects.get_or_create(
@@ -66,12 +63,14 @@ class ProductService:
 
 
 class ReviewService:
+    """
+    Service for managing product reviews.
+    """
+
     @classmethod
     @transaction.atomic
-    def create_review(cls, user: User, validated_data: dict) -> ProductReview:
-        product_id = validated_data.pop("product_id")
-        product_instance = get_object_or_404(Product, id=product_id)
-        review = ProductReview.objects.create(
-            user=user, product=product_instance, **validated_data
-        )
+    def create_review(cls, user: User, data: dict[str, Any]) -> ProductReview:
+        product_id = data.pop("product_id")
+        product = get_object_or_404(Product, id=product_id)
+        review = ProductReview.objects.create(user=user, product=product, **data)
         return review
