@@ -1,3 +1,4 @@
+from ast import Is
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 
@@ -26,6 +27,12 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [AdminOrReadOnly]
     service_class = ProductService
 
+    def get_queryset(self):
+        qs = self.queryset
+        if self.request.user.is_superuser:
+            return qs
+        return qs.filter(inventory__quantity__gt=0)
+
     def create(self, request, *args, **kwargs):
         serializer = ProductInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -41,6 +48,12 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailOutputSerializer
     permission_classes = [AdminOrReadOnly]
     service_class = ProductService
+
+    def get_queryset(self):
+        qs = self.queryset
+        if self.request.user.is_superuser:
+            return qs
+        return qs.filter(inventory__quantity__gt=0)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -60,7 +73,7 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategoryListOutputSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [AdminOrReadOnly]
 
     def create(self, request, *args, **kwargs):
         serializer = ProductCategoryInputSerializer(data=request.data)

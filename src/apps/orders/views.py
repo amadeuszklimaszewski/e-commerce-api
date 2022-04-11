@@ -19,13 +19,12 @@ from src.apps.orders.serializers import (
     OrderOutputSerializer,
 )
 from src.apps.orders.services import CartService, CouponService, OrderService
-from src.apps.orders.permissions import OwnerOrAdmin, CartOwnerOrAdmin
+from src.apps.orders.permissions import CartOwnerOrAdmin
 
 
 class CouponListCreateAPIView(generics.ListCreateAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponOutputSerializers
-    permission_classes = [permissions.IsAdminUser]
 
     def get_queryset(self):
         qs = self.queryset
@@ -46,7 +45,6 @@ class CouponListCreateAPIView(generics.ListCreateAPIView):
 class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponOutputSerializers
-    permission_classes = [permissions.IsAdminUser]
     service_class = CouponService
 
     def get_queryset(self):
@@ -73,8 +71,11 @@ class CartListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CartOutputSerializer
 
     def get_queryset(self):
-        qs = self.queryset.filter(user=self.request.user)
-        return qs
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(user=user)
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -88,10 +89,13 @@ class CartListCreateAPIView(generics.ListCreateAPIView):
 class CartDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartOutputSerializer
-    permission_classes = [OwnerOrAdmin]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(user=user)
 
 
 class CartItemsListCreateAPIView(generics.ListCreateAPIView):
@@ -102,7 +106,8 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         cart_pk = self.kwargs.get("pk")
-        return CartItem.objects.filter(cart_id=cart_pk, cart__user=self.request.user)
+        qs = self.queryset
+        return qs.filter(cart_id=cart_pk, cart__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         cart_id = self.kwargs.get("pk")
@@ -151,7 +156,7 @@ class OrderCreateAPIView(generics.CreateAPIView):
     service_class = OrderService
 
     def create(self, request, *args, **kwargs):
-        cart_id = self.kwargs.get("pk")
+        cart_id = kwargs.get("pk")
         serializer = OrderInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order = self.service_class.create_order(
@@ -170,7 +175,11 @@ class OrderListAPIView(generics.ListAPIView):
     serializer_class = OrderOutputSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(user=user)
 
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -179,7 +188,11 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     service_class = OrderService
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        qs = self.queryset
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(user=user)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

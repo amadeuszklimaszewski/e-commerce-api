@@ -1,8 +1,8 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from src.apps.accounts.models import UserAddress
+from src.apps.orders.decorators import database_debug
 from src.apps.orders.models import (
     Order,
     OrderItem,
@@ -96,19 +96,24 @@ class OrderService:
     Service for managing orders. Creates an Order instance based on cart.
     With a successful operation, it lowers the available quantity of each Product
     and deletes the cart used to create an order.
-    Optional coupons are checked if they exist, are active and the minimal total
-    requirement is fulfilled.
+
+    Optional coupons are checked if they exist, are active and
+    the minimal total requirement is fulfilled.
+
+    After a payment is confirmed by Stripe, StripeWebhookView calls .fullfill()
+    method which updates quantity sold of each item and changes
+    .payment_accepted attribute of an order to `True`.
     """
 
     @classmethod
     def _create_order_items(cls, order_instance: Order, cart_items):
         for cartitem in cart_items:
-            product_id = cartitem.product.id
-            product = get_object_or_404(Product, id=product_id)
-
+            product = cartitem.product
             quantity = cartitem.quantity
             max_quantity = product.inventory.quantity
+
             validate_item_quantity(quantity, max_quantity)
+
             OrderItem.objects.create(
                 order=order_instance, product=product, quantity=quantity
             )
@@ -119,18 +124,20 @@ class OrderService:
 
     @classmethod
     @transaction.atomic
-    def create_order(cls, cart_id: int, user: User, validated_data: dict) -> Order:
+    @database_debug
+    def create_order(cls, cart_id: int, user: User, validated_data) -> Order:
 
         address_instance = get_object_or_404(
             UserAddress, id=validated_data["address_id"], userprofile__user=user
         )
         cart_instance = get_object_or_404(Cart, id=cart_id, user=user)
+        cart_items = cart_instance.cart_items.select_related(
+            "product", "product__inventory"
+        ).all()
 
         order = Order.objects.create(user=user, address=address_instance)
 
-        cls._create_order_items(
-            order_instance=order, cart_items=cart_instance.cart_items.all()
-        )
+        cls._create_order_items(order_instance=order, cart_items=cart_items)
 
         if "coupon_code" in validated_data.keys():
             coupon = get_object_or_404(
@@ -141,15 +148,12 @@ class OrderService:
             )
             order.coupon = coupon
             order.save()
-        else:
-            order.coupon = None
-            order.save()
         cart_instance.delete()
         return order
 
     @classmethod
     @transaction.atomic
-    def update_order(cls, instance: Order, user: User, validated_data: dict) -> Order:
+    def update_order(cls, instance: Order, user: User, validated_data) -> Order:
         if "coupon_code" in validated_data.keys():
             coupon = get_object_or_404(
                 Coupon, code=validated_data["coupon_code"], is_active=True
@@ -172,7 +176,9 @@ class OrderService:
     @classmethod
     @transaction.atomic
     def destroy_order(cls, instance: Order):
-        orderitems = instance.order_items.all()
+        orderitems = instance.order_items.select_related(
+            "product", "product__inventory"
+        ).all()
         for orderitem in orderitems:
             inventory_instance = orderitem.product.inventory
             inventory_instance.quantity += orderitem.quantity
@@ -181,13 +187,11 @@ class OrderService:
         return
 
     @classmethod
-    def _update_product_inventory(cls, order_instance):
-        """
-        Function takes in order instance as a parameter.
-        It changes .sold attribute in each of order products after
-        a successful payment.
-        """
-        order_items = order_instance.order_items.all()
+    @database_debug
+    def _update_product_inventory(cls, order_instance: Order):
+        order_items = order_instance.order_items.select_related(
+            "product", "product__inventory"
+        ).all()
         for orderitem in order_items:
             product_id = orderitem.product.id
             product = get_object_or_404(Product, id=product_id)
@@ -201,11 +205,6 @@ class OrderService:
     @classmethod
     @transaction.atomic
     def fullfill_order(cls, session):
-        """
-        Function takes in session instance as a parameter, retrieves
-        Order instance given by order_id in metadata dict and changes
-        its .payment_accepted attribute to True.
-        """
         order_id = session["metadata"]["order_id"]
         order = get_object_or_404(Order, id=order_id)
         order.order_accepted = True

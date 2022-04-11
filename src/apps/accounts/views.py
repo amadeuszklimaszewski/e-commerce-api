@@ -26,7 +26,7 @@ class UserProfileListAPIView(generics.ListAPIView):
         return qs.filter(user=user)
 
 
-class UserProfileUpdateRetrieveAPIView(generics.RetrieveUpdateAPIView):
+class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileDetailOutputSerializer
     service_class = UserProfileService

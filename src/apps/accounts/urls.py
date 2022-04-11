@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from django.conf import settings
 from dj_rest_auth.views import (
     LoginView,
@@ -9,14 +9,14 @@ from src.apps.accounts.views import (
     AdressListCreateAPIView,
     UserRegisterAPIView,
     UserProfileListAPIView,
-    UserProfileUpdateRetrieveAPIView,
+    UserProfileDetailAPIView,
 )
 
 urlpatterns = [
     path("users/", UserProfileListAPIView.as_view()),
     path(
         "users/<uuid:account_id>/",
-        UserProfileUpdateRetrieveAPIView.as_view(),
+        UserProfileDetailAPIView.as_view(),
         name="user-detail",
     ),
     path("register/", UserRegisterAPIView.as_view()),
@@ -28,7 +28,6 @@ urlpatterns = [
 
 if getattr(settings, "REST_USE_JWT", False):
     from rest_framework_simplejwt.views import TokenVerifyView
-    from rest_framework_simplejwt.views import TokenObtainPairView
     from dj_rest_auth.jwt_auth import get_refresh_view
 
     urlpatterns += [
