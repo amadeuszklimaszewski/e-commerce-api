@@ -92,6 +92,14 @@ class CartService:
 
 
 class OrderService:
+    """
+    Service for managing orders. Creates an Order instance based on cart.
+    With a successful operation, it lowers the available quantity of each Product
+    and deletes the cart used to create an order.
+    Optional coupons are checked if they exist, are active and the minimal total
+    requirement is fulfilled.
+    """
+
     @classmethod
     def _create_order_items(cls, order_instance: Order, cart_items):
         for cartitem in cart_items:
