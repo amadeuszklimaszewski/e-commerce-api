@@ -183,6 +183,11 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.order_accepted:
+            return Response(
+                {"order_accepted": "Order already accepted and paid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = OrderInputSerializer(
             instance=instance, data=request.data, partial=False
         )

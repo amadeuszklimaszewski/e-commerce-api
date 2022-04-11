@@ -7,8 +7,8 @@ from rest_framework import status, views, permissions
 from rest_framework.response import Response
 
 from src.apps.orders.models import Order
+from src.apps.orders.services import OrderService
 from src.apps.payments.authentication import CsrfExemptSessionAuthentication
-from src.apps.payments.utils import fullfill_order
 
 
 stripe.api_key = config("STRIPE_SECRET_KEY")
@@ -72,6 +72,7 @@ class StripeWebhookView(views.APIView):
 
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [permissions.AllowAny]
+    service_class = OrderService
 
     def post(self, request, format=None):
         endpoint_secret = config("WEBHOOK_SECRET")
@@ -90,7 +91,7 @@ class StripeWebhookView(views.APIView):
         if event["type"] == "checkout.session.completed":
             print(event["data"]["object"]["payment_intent"])
             session = event["data"]["object"]
-            fullfill_order(session)
+            self.service_class.fullfill_order(session)
             print(session["metadata"]["order_id"])
 
         return Response(status=200)
