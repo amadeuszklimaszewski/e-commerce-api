@@ -115,7 +115,7 @@ class OrderService:
             quantity = cartitem.quantity
             max_quantity = product.inventory.quantity
 
-            validate_item_quantity(quantity, max_quantity)
+            validate_item_quantity(quantity=quantity, max_quantity=max_quantity)
 
             OrderItem.objects.create(order=instance, product=product, quantity=quantity)
             product_inventory = product.inventory
@@ -158,9 +158,6 @@ class OrderService:
                 total=instance.before_coupon, min_total=coupon.min_order_total
             )
             instance.coupon = coupon
-            instance.save()
-        else:
-            instance.coupon = None
             instance.save()
 
         instance.address = get_object_or_404(

@@ -1,6 +1,6 @@
-from ast import Is
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
+from django_filters import rest_framework as filters
 
 from src.apps.products.models import (
     Product,
@@ -18,6 +18,7 @@ from src.apps.products.serializers import (
     ProductReviewOutputSerializer,
 )
 from src.apps.products.services import ProductService, ReviewService
+from src.apps.products.filters import ProductFilter
 from src.core.permissions import AdminOrReadOnly
 
 
@@ -25,6 +26,8 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListOutputSerializer
     permission_classes = [AdminOrReadOnly]
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = ProductFilter
     service_class = ProductService
 
     def get_queryset(self):
@@ -32,6 +35,17 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         if self.request.user.is_superuser:
             return qs
         return qs.filter(inventory__quantity__gt=0)
+
+    # def get_queryset(self):
+    #     """
+    #     Optionally restricts the returned purchases to a given user,
+    #     by filtering against a `username` query parameter in the URL.
+    #     """
+    #     queryset = Purchase.objects.all()
+    #     username = self.request.query_params.get('username')
+    #     if username is not None:
+    #         queryset = queryset.filter(purchaser__username=username)
+    #     return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = ProductInputSerializer(data=request.data)

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from src.apps.orders.models import Order
 from src.apps.orders.services import OrderService
-from src.apps.payments.authentication import CsrfExemptSessionAuthentication
+from src.core.authentication import CsrfExemptSessionAuthentication
 
 
 stripe.api_key = config("STRIPE_SECRET_KEY")

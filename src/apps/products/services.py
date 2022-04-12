@@ -58,6 +58,8 @@ class ProductService:
         if discount_data:
             if percentage := discount_data.get("percentage", None):
                 instance.set_discount(percentage)
+        else:
+            instance.set_discount(0)
 
         return instance
 

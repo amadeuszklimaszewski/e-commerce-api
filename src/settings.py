@@ -43,16 +43,18 @@ INSTALLED_APPS = [
     # 3rd party
     "rest_framework",
     "rest_framework.authtoken",
+    "dj_rest_auth",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "django_filters",
     "django_countries",
     "phonenumbers",
     "phonenumber_field",
-    "dj_rest_auth",
-    "corsheaders",
-    "rest_framework_simplejwt",
     # local
     "src.apps.accounts",
     "src.apps.products",
     "src.apps.orders",
+    "src.apps.payments",
 ]
 
 MIDDLEWARE = [
@@ -155,6 +157,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 20,
+    # "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
 }
