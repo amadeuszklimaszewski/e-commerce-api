@@ -41,9 +41,7 @@ class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = UserProfileUpdateInputSerializer(
-            instance=instance, data=request.data, partial=False
-        )
+        serializer = UserProfileUpdateInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         updated_userprofile = self.service_class.update_user(
             instance=instance, data=serializer.validated_data

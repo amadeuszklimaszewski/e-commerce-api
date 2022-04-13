@@ -5,7 +5,6 @@ from django_filters import rest_framework as filters
 from src.apps.products.models import (
     Product,
     ProductCategory,
-    ProductInventory,
     ProductReview,
 )
 from src.apps.products.serializers import (
@@ -16,10 +15,11 @@ from src.apps.products.serializers import (
     ProductDetailOutputSerializer,
     ProductReviewInputSerializer,
     ProductReviewOutputSerializer,
+    ProductReviewUpdateInputSerializer,
 )
 from src.apps.products.services import ProductService, ReviewService
-from src.apps.products.filters import ProductFilter
-from src.core.permissions import AdminOrReadOnly
+from src.apps.products.filters import ProductFilter, ReviewFilter
+from src.core.permissions import AdminOrReadOnly, OwnerOrAdmin, OwnerOrReadOnly
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
@@ -35,17 +35,6 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         if self.request.user.is_superuser:
             return qs
         return qs.filter(inventory__quantity__gt=0)
-
-    # def get_queryset(self):
-    #     """
-    #     Optionally restricts the returned purchases to a given user,
-    #     by filtering against a `username` query parameter in the URL.
-    #     """
-    #     queryset = Purchase.objects.all()
-    #     username = self.request.query_params.get('username')
-    #     if username is not None:
-    #         queryset = queryset.filter(purchaser__username=username)
-    #     return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = ProductInputSerializer(data=request.data)
@@ -71,9 +60,7 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = ProductInputSerializer(
-            instance=instance, data=request.data, partial=False
-        )
+        serializer = ProductInputSerializer(data=request.data, partial=False)
         serializer.is_valid(raise_exception=True)
         updated_product = self.service_class.update_product(
             instance=instance, data=serializer.validated_data
@@ -102,6 +89,8 @@ class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductReview.objects.all()
     serializer_class = ProductReviewOutputSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = ReviewFilter
     service_class = ReviewService
 
     def create(self, request, *args, **kwargs):
@@ -113,4 +102,25 @@ class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
         )
         return Response(
             self.get_serializer(review).data, status=status.HTTP_201_CREATED
+        )
+
+
+class ProductReviewDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ProductReview.objects.all()
+    serializer_class = ProductReviewOutputSerializer
+    permission_classes = [OwnerOrReadOnly]
+    service_class = ReviewService
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = ProductReviewUpdateInputSerializer(
+            data=request.data, partial=False
+        )
+        serializer.is_valid(raise_exception=True)
+        updated_review = self.service_class.update_review(
+            instance=instance, data=serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(updated_review).data,
+            status=status.HTTP_200_OK,
         )

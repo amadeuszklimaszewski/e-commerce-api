@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Case, When, F, Q, Value, Avg, Count
 from django.db import models
 from django_filters import rest_framework as filters
-from src.apps.products.models import Product, ProductCategory, ProductReview
+from src.apps.products.models import Product, ProductCategory, ProductReview, User
 
 
 class ProductFilter(filters.FilterSet):
@@ -11,6 +11,7 @@ class ProductFilter(filters.FilterSet):
         field_name="category__name",
         to_field_name="name",
     )
+    uncategorized = filters.BooleanFilter(field_name="category", lookup_expr="isnull")
     price = filters.LookupChoiceFilter(
         field_class=forms.DecimalField,
         lookup_choices=[
@@ -19,7 +20,6 @@ class ProductFilter(filters.FilterSet):
             ("lt", "Less than"),
         ],
     )
-    uncategorized = filters.BooleanFilter(field_name="category", lookup_expr="isnull")
     discounted = filters.BooleanFilter(
         label="Is discounted",
         method="filter_is_discounted",
@@ -63,3 +63,28 @@ class ProductFilter(filters.FilterSet):
                 )
             ).filter(discounted=value)
         return queryset
+
+
+class ReviewFilter(filters.FilterSet):
+    product = filters.ModelChoiceFilter(
+        queryset=Product.objects.all(),
+        to_field_name="name",
+        field_name="product__name",
+    )
+    user = filters.ModelChoiceFilter(
+        queryset=User.objects.all(),
+        to_field_name="username",
+        field_name="user__username",
+    )
+    rating = filters.LookupChoiceFilter(
+        field_class=forms.DecimalField,
+        lookup_choices=[
+            ("exact", "Equals"),
+            ("gt", "Greater than"),
+            ("lt", "Less than"),
+        ],
+    )
+
+    class Meta:
+        model = ProductReview
+        fields = ["rating"]

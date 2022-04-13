@@ -7,7 +7,6 @@ from src.apps.accounts.serializers import (
 )
 from src.apps.orders.models import (
     Order,
-    OrderItem,
     Cart,
     CartItem,
     Coupon,

@@ -76,3 +76,13 @@ class ReviewService:
         product = get_object_or_404(Product, id=product_id)
         review = ProductReview.objects.create(user=user, product=product, **data)
         return review
+
+    @classmethod
+    @transaction.atomic
+    def update_review(
+        cls, instance: ProductReview, data: dict[str, Any]
+    ) -> ProductReview:
+        instance.description = data["description"]
+        instance.rating = data["rating"]
+        instance.save()
+        return instance

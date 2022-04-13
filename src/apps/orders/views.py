@@ -19,7 +19,6 @@ from src.apps.orders.serializers import (
     OrderOutputSerializer,
 )
 from src.apps.orders.services import CartService, CouponService, OrderService
-from src.apps.orders.permissions import CartOwnerOrAdmin
 
 
 class CouponListCreateAPIView(generics.ListCreateAPIView):
@@ -55,9 +54,7 @@ class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = CouponInputSerializer(
-            instance=instance, data=request.data, partial=False
-        )
+        serializer = CouponInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         coupon = self.service_class.update_coupon(
             instance=instance, data=serializer.validated_data
@@ -103,13 +100,15 @@ class CartDetailAPIView(generics.RetrieveDestroyAPIView):
 class CartItemsListCreateAPIView(generics.ListCreateAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemOutputSerializer
-    permission_classes = [CartOwnerOrAdmin]
     service_class = CartService
 
     def get_queryset(self):
         cart_pk = self.kwargs.get("pk")
         qs = self.queryset
-        return qs.filter(cart_id=cart_pk, cart__user=self.request.user)
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        return qs.filter(cart_id=cart_pk, cart__user=user)
 
     def create(self, request, *args, **kwargs):
         cart_id = self.kwargs.get("pk")
@@ -139,9 +138,7 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = CartItemQuantityInputSerializer(
-            instance=instance, data=request.data, partial=False
-        )
+        serializer = CartItemQuantityInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         cartitem = self.service_class.update_cart_item(
             istance=instance, data=serializer.validated_data
@@ -203,9 +200,7 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                 {"order_accepted": "Order already accepted and paid"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer = OrderInputSerializer(
-            instance=instance, data=request.data, partial=False
-        )
+        serializer = OrderInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         updated_product = self.service_class.update_order(
             instance=instance, user=self.request.user, data=serializer.validated_data

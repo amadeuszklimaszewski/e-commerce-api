@@ -8,18 +8,38 @@ from src.apps.products.models import (
 )
 
 
-class DiscountInputSerializer(serializers.Serializer):
-    percentage = serializers.FloatField(
-        default=0.0, validators=[MaxValueValidator(100), MinValueValidator(0)]
-    )
-
-
 class ProductCategoryInputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
+    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+
+    class Meta:
+        model = ProductCategory
+        fields = ("id", "name", "created", "updated")
+        read_only_fields = fields
+
+
+class ProductCategoryOutputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductCategory
+        fields = (
+            "id",
+            "name",
+        )
+        read_only_fields = fields
+
+
 class ProductInventoryInputSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(initial=0, allow_null=True)
+
+
+class DiscountInputSerializer(serializers.Serializer):
+    percentage = serializers.FloatField(
+        default=0.0, validators=[MaxValueValidator(100), MinValueValidator(0)]
+    )
 
 
 class ProductInputSerializer(serializers.Serializer):
@@ -31,16 +51,6 @@ class ProductInputSerializer(serializers.Serializer):
     discount = DiscountInputSerializer(default=0.0, required=False)
     category = ProductCategoryInputSerializer(many=False)
     inventory = ProductInventoryInputSerializer(many=False, required=True)
-
-
-class ProductCategoryOutputSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductCategory
-        fields = (
-            "id",
-            "name",
-        )
-        read_only_fields = fields
 
 
 class ProductInventoryOutputSerializer(serializers.ModelSerializer):
@@ -97,18 +107,15 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
-    created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-
-    class Meta:
-        model = ProductCategory
-        fields = ("id", "name", "created", "updated")
-        read_only_fields = fields
-
-
 class ProductReviewInputSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
+    description = serializers.CharField()
+    rating = serializers.FloatField(
+        validators=[MaxValueValidator(5), MinValueValidator(0)]
+    )
+
+
+class ProductReviewUpdateInputSerializer(serializers.Serializer):
     description = serializers.CharField()
     rating = serializers.FloatField(
         validators=[MaxValueValidator(5), MinValueValidator(0)]
