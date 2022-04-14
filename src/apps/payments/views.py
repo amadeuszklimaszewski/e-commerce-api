@@ -21,7 +21,7 @@ class StripeConfigView(views.APIView):
 
     def get(self, request, format=None):
         data = {"publishable_key": str(config("STRIPE_PUBLISHABLE_KEY"))}
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class StripeSessionView(views.APIView):
@@ -59,7 +59,9 @@ class StripeSessionView(views.APIView):
             ],
             metadata={"order_id": order_id},
         )
-        return Response({"sessionId": checkout_session["id"]})
+        return Response(
+            {"sessionId": checkout_session["id"]}, status=status.HTTP_200_OK
+        )
 
 
 class StripeWebhookView(views.APIView):
@@ -83,10 +85,10 @@ class StripeWebhookView(views.APIView):
             event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
         except ValueError as err:
             print(err)
-            return Response(status=400)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         except stripe.error.SignatureVerificationError as err:
             print(err)
-            return Response(status=400)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         if event["type"] == "checkout.session.completed":
             print(event["data"]["object"]["payment_intent"])
@@ -94,4 +96,4 @@ class StripeWebhookView(views.APIView):
             self.service_class.fullfill_order(session)
             print(session["metadata"]["order_id"])
 
-        return Response(status=200)
+        return Response(status=status.HTTP_200_OK)

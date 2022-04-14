@@ -31,10 +31,6 @@ class ProductInventory(models.Model):
     def __str__(self) -> str:
         return f"Available stock : {self.quantity} || {self.product.name}"
 
-    @property
-    def get_availability(self) -> str:
-        pass
-
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
@@ -47,9 +43,6 @@ class Product(models.Model):
 
     short_description = models.CharField(max_length=1000, blank=True, null=True)
     long_description = models.TextField(blank=True, null=True)
-
-    # TODO research about most optimal way of serving and storing images
-    # image = models.FieldFile()
 
     category = models.ForeignKey(
         ProductCategory, on_delete=models.SET_NULL, null=True, related_name="products"
@@ -109,3 +102,10 @@ class ProductReview(models.Model):
 
     def __str__(self) -> str:
         return f"Review of {self.product.name} || Author: {self.user.username}"
+
+    def get_absolute_url(self):
+        return f"/api/products/reviews/{self.pk}/"
+
+    @property
+    def endpoint(self):
+        return self.get_absolute_url()
