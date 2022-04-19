@@ -1,5 +1,5 @@
 from django import forms
-from django.db.models import Case, When, F, Q, Value, Avg, Count
+from django.db.models import Case, When, F, Avg
 from django.db import models
 from django_filters import rest_framework as filters
 from src.apps.products.models import Product, ProductCategory, ProductReview, User

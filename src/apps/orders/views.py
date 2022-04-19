@@ -1,4 +1,7 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -154,6 +157,7 @@ class OrderCreateAPIView(generics.CreateAPIView):
     serializer_class = OrderOutputSerializer
     service_class = OrderService
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         cart_id = kwargs.get("pk")
         serializer = OrderInputSerializer(data=request.data)
@@ -162,6 +166,19 @@ class OrderCreateAPIView(generics.CreateAPIView):
             cart_id=cart_id,
             user=self.request.user,
             data=serializer.validated_data,
+        )
+
+        user_email = order.user.email
+        send_mail(
+            "Order #{}".format(order.id),
+            """
+            Thank you for purchasing in our store.
+            We received your order, awaiting payment.
+            THIS IS NOT SHIPPING CONFIRMATION EMAIL.
+            """,
+            "ecommapi@ecommapi.com",
+            ["{}".format(user_email)],
+            fail_silently=False,
         )
         return Response(
             self.get_serializer(order).data,

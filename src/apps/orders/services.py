@@ -2,8 +2,10 @@ from typing import Any
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from rest_framework.serializers import ValidationError
+
 from src.apps.accounts.models import UserAddress
-from src.core.decorators import database_debug
 from src.apps.orders.models import (
     Order,
     OrderItem,
@@ -110,6 +112,8 @@ class OrderService:
 
     @classmethod
     def _create_order_items(cls, instance: Order, cart_items):
+        if not cart_items:
+            raise ValidationError({"Missing items": "The cart is empty"})
         for cartitem in cart_items:
             product = cartitem.product
             quantity = cartitem.quantity
@@ -180,7 +184,6 @@ class OrderService:
         return
 
     @classmethod
-    @database_debug
     def _update_product_inventory(cls, order_instance: Order):
         order_items = order_instance.order_items.select_related(
             "product", "product__inventory"
@@ -192,6 +195,19 @@ class OrderService:
         return
 
     @classmethod
+    def _send_email(cls, order_id: int, email: str):
+        send_mail(
+            "Order #{} payment confirmation".format(order_id),
+            """
+            Thank you for purchasing in our store.
+            We received your payment. Your products will be sent soon
+            """,
+            "ecommapi@google.com",
+            ["{}".format(email)],
+            fail_silently=False,
+        )
+
+    @classmethod
     @transaction.atomic
     def fullfill_order(cls, session):
         order_id = session["metadata"]["order_id"]
@@ -200,4 +216,5 @@ class OrderService:
         order.payment_accepted = True
         order.save()
         cls._update_product_inventory(order)
+        cls._send_email(order_id=order_id, email=order.user.email)
         return

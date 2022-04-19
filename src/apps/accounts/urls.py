@@ -4,6 +4,8 @@ from dj_rest_auth.views import (
     LoginView,
     LogoutView,
     PasswordChangeView,
+    PasswordResetView,
+    PasswordResetConfirmView,
 )
 from src.apps.accounts.views import (
     AdressListCreateAPIView,
@@ -23,6 +25,12 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("password/change/", PasswordChangeView.as_view(), name="password_change"),
+    path("password/reset/", PasswordResetView.as_view(), name="password_reset"),
+    path(
+        "password/reset/confirm/<uidb64>/<token>/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
     path("addresses/", AdressListCreateAPIView.as_view()),
 ]
 
