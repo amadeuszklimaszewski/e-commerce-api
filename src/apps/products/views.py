@@ -19,7 +19,7 @@ from src.apps.products.serializers import (
 )
 from src.apps.products.services import ProductService, ReviewService
 from src.apps.products.filters import ProductFilter, ReviewFilter
-from src.core.permissions import AdminOrReadOnly, OwnerOrAdmin, OwnerOrReadOnly
+from src.core.permissions import AdminOrReadOnly, OwnerOrReadOnly
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
