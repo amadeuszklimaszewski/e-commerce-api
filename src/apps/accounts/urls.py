@@ -15,13 +15,13 @@ from src.apps.accounts.views import (
 )
 
 urlpatterns = [
-    path("users/", UserProfileListAPIView.as_view()),
+    path("users/", UserProfileListAPIView.as_view(), name="user-list"),
     path(
         "users/<uuid:account_id>/",
         UserProfileDetailAPIView.as_view(),
         name="user-detail",
     ),
-    path("register/", UserRegisterAPIView.as_view()),
+    path("register/", UserRegisterAPIView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("password/change/", PasswordChangeView.as_view(), name="password_change"),
@@ -31,7 +31,7 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
-    path("addresses/", AdressListCreateAPIView.as_view()),
+    path("addresses/", AdressListCreateAPIView.as_view(), name="address-list"),
 ]
 
 if getattr(settings, "REST_USE_JWT", False):

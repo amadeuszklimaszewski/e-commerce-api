@@ -60,7 +60,8 @@ class StripeSessionView(views.APIView):
             metadata={"order_id": order_id},
         )
         return Response(
-            {"sessionId": checkout_session["id"]}, status=status.HTTP_200_OK
+            {"sessionId": checkout_session["id"], "url": checkout_session["url"]},
+            status=status.HTTP_200_OK,
         )
 
 

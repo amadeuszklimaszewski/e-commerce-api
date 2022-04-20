@@ -9,9 +9,13 @@ from src.apps.products.views import (
 )
 
 urlpatterns = [
-    path("", ProductListCreateAPIView.as_view()),
+    path("", ProductListCreateAPIView.as_view(), name="product-list"),
     path("<int:pk>/", ProductDetailAPIView.as_view(), name="product-detail"),
-    path("categories/", ProductCategoryListCreateAPIView.as_view()),
-    path("reviews/", ProductReviewListCreateAPIView.as_view()),
-    path("reviews/<int:pk>/", ProductReviewDetailAPIView.as_view()),
+    path(
+        "categories/", ProductCategoryListCreateAPIView.as_view(), name="category-list"
+    ),
+    path("reviews/", ProductReviewListCreateAPIView.as_view(), name="review-list"),
+    path(
+        "reviews/<int:pk>/", ProductReviewDetailAPIView.as_view(), name="review-detail"
+    ),
 ]
