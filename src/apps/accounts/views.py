@@ -16,7 +16,6 @@ from src.apps.accounts.services import UserProfileService
 class UserProfileListAPIView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileListOutputSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         qs = self.queryset
@@ -70,7 +69,6 @@ class UserRegisterAPIView(generics.CreateAPIView):
 class AdressListCreateAPIView(generics.ListCreateAPIView):
     queryset = UserAddress.objects.all()
     serializer_class = UserAddressOutputSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         qs = self.queryset

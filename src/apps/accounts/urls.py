@@ -14,12 +14,14 @@ from src.apps.accounts.views import (
     UserProfileDetailAPIView,
 )
 
+app_name = "accounts"
+
 urlpatterns = [
-    path("users/", UserProfileListAPIView.as_view(), name="user-list"),
+    path("users/", UserProfileListAPIView.as_view(), name="user-profile-list"),
     path(
         "users/<uuid:account_id>/",
         UserProfileDetailAPIView.as_view(),
-        name="user-detail",
+        name="user-profile-detail",
     ),
     path("register/", UserRegisterAPIView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),

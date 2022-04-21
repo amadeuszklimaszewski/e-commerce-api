@@ -24,7 +24,7 @@ class UserProfileService:
 
     @classmethod
     def _create_address(cls, data: dict[str, Any]) -> UserAddress:
-        address = UserAddress.objects.create(**data)
+        address, _ = UserAddress.objects.get_or_create(**data)
         return address
 
     @classmethod

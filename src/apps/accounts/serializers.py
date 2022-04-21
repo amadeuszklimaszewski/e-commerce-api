@@ -129,6 +129,8 @@ class UserProfileListOutputSerializer(serializers.ModelSerializer):
         fields = (
             "user",
             "account_id",
+            "phone_number",
+            "birthday",
             "address",
         )
         read_only_fields = fields
