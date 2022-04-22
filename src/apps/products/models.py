@@ -29,7 +29,7 @@ class ProductInventory(models.Model):
         verbose_name_plural = "Inventories"
 
     def __str__(self) -> str:
-        return f"Available stock : {self.quantity} || {self.product.name}"
+        return f"Available stock : {self.quantity} | {self.product.name}"
 
 
 class Product(models.Model):
@@ -65,13 +65,21 @@ class Product(models.Model):
         self.discount_price = round((self.price * (1 - percentage / 100)), 2)
         self.save()
 
+    def remove_discount(self):
+        self.discount_price = None
+        self.save()
+
     @property
     def is_discounted(self) -> bool:
         return bool(self.discount_price)
 
-    def remove_discount(self):
-        self.discount_price = None
-        self.save()
+    @property
+    def dollar_price(self):
+        return "$%s" % self.price
+
+    @property
+    def dollar_discount_price(self):
+        return "$%s" % self.discount_price if self.discount_price else ""
 
     @property
     def avg_rating(self):
@@ -101,7 +109,7 @@ class ProductReview(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"Review of {self.product.name} || Author: {self.user.username}"
+        return f"Review of {self.product.name} | Author: {self.user.username}"
 
     def get_absolute_url(self):
         return f"/api/products/reviews/{self.pk}/"

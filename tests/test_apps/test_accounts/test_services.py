@@ -1,6 +1,3 @@
-from unittest.mock import patch
-from copy import copy
-import requests
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 

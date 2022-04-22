@@ -12,7 +12,7 @@ class ProductCategoryInputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
-class ProductCategoryListOutputSerializer(serializers.ModelSerializer):
+class ProductCategoryOutputSerializer(serializers.ModelSerializer):
     created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
@@ -73,6 +73,8 @@ class ProductListOutputSerializer(serializers.ModelSerializer):
             "name",
             "price",
             "discount_price",
+            "dollar_price",
+            "dollar_discount_price",
             "avg_rating",
             "review_count",
             "inventory",
@@ -96,6 +98,8 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
             "long_description",
             "price",
             "discount_price",
+            "dollar_price",
+            "dollar_discount_price",
             "avg_rating",
             "review_count",
             "weight",

@@ -1,5 +1,3 @@
-import datetime
-
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
@@ -13,7 +11,6 @@ User = get_user_model()
 class TestUserProfileViews(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user_profile_list_url = reverse("accounts:user-profile-list")
         cls.user = User.objects.create(username="testuser")
         cls.other_user = User.objects.create(username="otheruser")
 
@@ -38,6 +35,7 @@ class TestUserProfileViews(APITestCase):
         )
         cls.user_profile.address.add(cls.address)
 
+        cls.user_profile_list_url = reverse("accounts:user-profile-list")
         cls.user_profile_detail_url = reverse(
             "accounts:user-profile-detail",
             kwargs={"account_id": cls.user_profile.account_id},

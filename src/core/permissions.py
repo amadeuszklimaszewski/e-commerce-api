@@ -22,6 +22,27 @@ class AdminOrReadOnly(permissions.BasePermission):
         )
 
 
+class StaffOrReadOnly(permissions.BasePermission):
+    """
+    Object-level permission to only allow actions not in SAFE_METHODS
+    only for staff member.
+    """
+
+    def has_permission(self, request, view):
+        return bool(
+            request.method in permissions.SAFE_METHODS
+            or request.user
+            and request.user.is_staff
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.method in permissions.SAFE_METHODS
+            or request.user
+            and request.user.is_staff
+        )
+
+
 class OwnerOrAdmin(permissions.BasePermission):
     """
     Object-level permission to only allow accessing own cart.

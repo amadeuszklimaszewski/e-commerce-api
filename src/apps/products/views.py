@@ -8,9 +8,9 @@ from src.apps.products.models import (
     ProductReview,
 )
 from src.apps.products.serializers import (
-    ProductCategoryListOutputSerializer,
-    ProductInputSerializer,
     ProductCategoryInputSerializer,
+    ProductCategoryOutputSerializer,
+    ProductInputSerializer,
     ProductListOutputSerializer,
     ProductDetailOutputSerializer,
     ProductReviewInputSerializer,
@@ -19,20 +19,20 @@ from src.apps.products.serializers import (
 )
 from src.apps.products.services import ProductService, ReviewService
 from src.apps.products.filters import ProductFilter, ReviewFilter
-from src.core.permissions import AdminOrReadOnly, OwnerOrReadOnly
+from src.core.permissions import OwnerOrReadOnly, StaffOrReadOnly
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListOutputSerializer
-    permission_classes = [AdminOrReadOnly]
+    permission_classes = [StaffOrReadOnly]
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = ProductFilter
     service_class = ProductService
 
     def get_queryset(self):
         qs = self.queryset
-        if self.request.user.is_superuser:
+        if self.request.user.is_staff:
             return qs
         return qs.filter(inventory__quantity__gt=0)
 
@@ -49,7 +49,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailOutputSerializer
-    permission_classes = [AdminOrReadOnly]
+    permission_classes = [StaffOrReadOnly]
     service_class = ProductService
 
     def get_queryset(self):
@@ -70,11 +70,17 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             status=status.HTTP_200_OK,
         )
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.inventory.delete()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductCategory.objects.all()
-    serializer_class = ProductCategoryListOutputSerializer
-    permission_classes = [AdminOrReadOnly]
+    serializer_class = ProductCategoryOutputSerializer
+    permission_classes = [StaffOrReadOnly]
 
     def create(self, request, *args, **kwargs):
         serializer = ProductCategoryInputSerializer(data=request.data)
@@ -83,6 +89,12 @@ class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):
         return Response(
             self.get_serializer(category).data, status=status.HTTP_201_CREATED
         )
+
+
+class ProductCategoryDetailAPIView(generics.RetrieveDestroyAPIView):
+    queryset = ProductCategory.objects.all()
+    serializer_class = ProductCategoryOutputSerializer
+    permission_classes = [StaffOrReadOnly]
 
 
 class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
