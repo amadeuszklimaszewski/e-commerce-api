@@ -41,7 +41,6 @@ class TestCouponService(TestCase):
 class TestCartService(TestCase):
     @classmethod
     def setUpTestData(cls):
-        management.call_command("flush")
         cls.service_class = CartService
 
         cls.user = User.objects.create(username="testuser")
@@ -388,7 +387,7 @@ class TestOrderService(TestCase):
 
         self.stripe_session["metadata"]["order_id"] = order.id
         self.service_class.fullfill_order(self.stripe_session)
-        order_item = OrderItem.objects.get(id=order.id)
+        order_item = OrderItem.objects.get(order_id=order.id)
 
         self.assertEqual(order_item.quantity, order_item.product.inventory.sold)
 

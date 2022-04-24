@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+import uuid
 
 from src.apps.accounts.models import UserAddress
 from src.apps.products.models import Product
@@ -8,6 +9,9 @@ User = get_user_model()
 
 
 class Cart(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -23,6 +27,9 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
@@ -56,6 +63,9 @@ class CartItem(models.Model):
 
 
 class Coupon(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     code = models.CharField(max_length=50)
     amount = models.IntegerField()
     min_order_total = models.IntegerField(default=0)
@@ -76,6 +86,9 @@ class Coupon(models.Model):
 
 
 class Order(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     address = models.ForeignKey(
         UserAddress, on_delete=models.SET_NULL, null=True, blank=True
@@ -109,6 +122,9 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name="order_items"
     )

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+import uuid
 
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -109,7 +110,7 @@ class TestCartViews(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["results"][0]["id"], self.cart.id)
+        self.assertEqual(uuid.UUID(response.data["results"][0]["id"]), self.cart.id)
 
     def test_user_can_retrieve_cart_by_id(self):
         response = self.client.get(self.cart_detail_url)
@@ -207,7 +208,9 @@ class TestCartItemViews(APITestCase):
         response = self.client.get(self.cart_item_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["results"][0]["id"], self.cart.id)
+        self.assertEqual(
+            uuid.UUID(response.data["results"][0]["id"]), self.cart_item.id
+        )
 
     def test_user_can_retrieve_cart_item_by_id(self):
         response = self.client.get(self.cart_item_detail_url)
@@ -301,7 +304,7 @@ class TestOrderViews(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["results"][0]["id"], self.order.id)
+        self.assertEqual(uuid.UUID(response.data["results"][0]["id"]), self.order.id)
 
     def test_user_can_retrieve_order_by_id(self):
         response = self.client.get(self.order_detail_url)
