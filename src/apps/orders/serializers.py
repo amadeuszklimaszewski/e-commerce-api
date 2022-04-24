@@ -17,6 +17,7 @@ class CouponInputSerializer(serializers.Serializer):
     code = serializers.CharField()
     amount = serializers.IntegerField()
     is_active = serializers.BooleanField()
+    min_order_total = serializers.IntegerField()
 
 
 class CouponOutputSerializers(serializers.ModelSerializer):

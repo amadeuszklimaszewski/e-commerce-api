@@ -15,6 +15,8 @@ from src.apps.payments.views import (
     StripeConfigView,
 )
 
+app_name = "orders"
+
 urlpatterns = [
     path("coupons/", CouponListCreateAPIView.as_view(), name="coupon-list"),
     path("coupons/<int:pk>/", CouponDetailAPIView.as_view(), name="coupon-detail"),

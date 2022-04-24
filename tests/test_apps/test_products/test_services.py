@@ -57,7 +57,6 @@ class TestProductService(TestCase):
         self.assertEqual(ProductCategory.objects.all().count(), 1)
         self.assertEqual(ProductInventory.objects.all().count(), 1)
 
-        self.assertEqual(Product.objects.get(id=1), product)
         self.assertEqual(Product.objects.get(id=product_id), product)
         self.assertTrue(product.is_discounted)
         self.assertNotEqual(product.price, product.discount_price)

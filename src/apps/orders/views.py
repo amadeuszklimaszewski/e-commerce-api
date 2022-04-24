@@ -30,7 +30,7 @@ class CouponListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = self.queryset
-        if self.request.user.is_superuser:
+        if self.request.user.is_staff:
             return qs
         return qs.none()
 
@@ -44,14 +44,14 @@ class CouponListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class CouponDetailAPIView(generics.RetrieveUpdateAPIView):
+class CouponDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponOutputSerializers
     service_class = CouponService
 
     def get_queryset(self):
         qs = self.queryset
-        if self.request.user.is_superuser:
+        if self.request.user.is_staff:
             return qs
         return qs.none()
 
@@ -166,19 +166,6 @@ class OrderCreateAPIView(generics.CreateAPIView):
             cart_id=cart_id,
             user=self.request.user,
             data=serializer.validated_data,
-        )
-
-        user_email = order.user.email
-        send_mail(
-            "Order #{}".format(order.id),
-            """
-            Thank you for purchasing in our store.
-            We received your order, awaiting payment.
-            THIS IS NOT SHIPPING CONFIRMATION EMAIL.
-            """,
-            "ecommapi@ecommapi.com",
-            ["{}".format(user_email)],
-            fail_silently=False,
         )
         return Response(
             self.get_serializer(order).data,

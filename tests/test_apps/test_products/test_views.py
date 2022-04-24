@@ -3,7 +3,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from src.apps.accounts.models import UserProfile, UserAddress
 from src.apps.products.models import (
     Product,
     ProductCategory,

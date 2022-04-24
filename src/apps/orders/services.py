@@ -31,6 +31,7 @@ class CouponService:
             "code",
             "amount",
             "is_active",
+            "min_order_total",
         ]
         for field in fields:
             try:
@@ -128,6 +129,20 @@ class OrderService:
         return
 
     @classmethod
+    def _send_email_before_payment(cls, order_id: int, email: str):
+        send_mail(
+            "Order #{}".format(order_id),
+            """
+            Thank you for purchasing in our store.
+            We received your order, awaiting payment.
+            THIS IS NOT SHIPPING CONFIRMATION EMAIL.
+            """,
+            "ecommapi@ecommapi.com",
+            ["{}".format(email)],
+            fail_silently=False,
+        )
+
+    @classmethod
     @transaction.atomic
     def create_order(cls, cart_id: int, user: User, data: dict[str, Any]) -> Order:
 
@@ -151,6 +166,7 @@ class OrderService:
             order.coupon = coupon
             order.save()
         cart.delete()
+        cls._send_email_before_payment(order_id=order.id, email=order.user.email)
         return order
 
     @classmethod
@@ -195,14 +211,14 @@ class OrderService:
         return
 
     @classmethod
-    def _send_email(cls, order_id: int, email: str):
+    def _send_email_after_payment(cls, order_id: int, email: str):
         send_mail(
             "Order #{} payment confirmation".format(order_id),
             """
             Thank you for purchasing in our store.
             We received your payment. Your products will be sent soon
             """,
-            "ecommapi@google.com",
+            "ecommapi@ecommapi.com",
             ["{}".format(email)],
             fail_silently=False,
         )
@@ -216,5 +232,5 @@ class OrderService:
         order.payment_accepted = True
         order.save()
         cls._update_product_inventory(order)
-        cls._send_email(order_id=order_id, email=order.user.email)
+        cls._send_email_after_payment(order_id=order_id, email=order.user.email)
         return

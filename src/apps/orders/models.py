@@ -1,14 +1,13 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from src.apps.accounts.models import UserAddress, UserProfile
+from src.apps.accounts.models import UserAddress
 from src.apps.products.models import Product
 
 User = get_user_model()
 
 
 class Cart(models.Model):
-    # id, create an order using current data and .cart_items for .order_items
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -56,9 +55,6 @@ class CartItem(models.Model):
         return self.total_item_price
 
 
-# ----------- # ----------- # ----------- # ----------- #
-
-
 class Coupon(models.Model):
     code = models.CharField(max_length=50)
     amount = models.IntegerField()
@@ -70,9 +66,6 @@ class Coupon(models.Model):
 
     def __str__(self) -> str:
         return f"{self.code} coupon for ${self.amount}"
-
-
-# ----------- # ----------- # ----------- # ----------- #
 
 
 # class PaymentDetails(models.Model):
