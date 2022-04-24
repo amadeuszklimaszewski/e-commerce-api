@@ -29,7 +29,6 @@ class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileDetailOutputSerializer
     service_class = UserProfileService
-    lookup_field = "account_id"
 
     def get_queryset(self):
         qs = self.queryset

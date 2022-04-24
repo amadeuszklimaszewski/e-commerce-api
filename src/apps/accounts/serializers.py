@@ -127,8 +127,8 @@ class UserProfileListOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
+            "id",
             "user",
-            "account_id",
             "phone_number",
             "birthday",
             "address",
@@ -145,8 +145,8 @@ class UserProfileDetailOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
+            "id",
             "user",
-            "account_id",
             "phone_number",
             "birthday",
             "address",
@@ -161,5 +161,5 @@ class UserOrderOutputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ("user", "account_id", "phone_number")
+        fields = ("id", "user", "phone_number")
         read_only_fields = fields

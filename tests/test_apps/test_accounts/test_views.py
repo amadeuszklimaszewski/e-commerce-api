@@ -38,7 +38,7 @@ class TestUserProfileViews(APITestCase):
         cls.user_profile_list_url = reverse("accounts:user-profile-list")
         cls.user_profile_detail_url = reverse(
             "accounts:user-profile-detail",
-            kwargs={"account_id": cls.user_profile.account_id},
+            kwargs={"pk": cls.user_profile.id},
         )
 
     def setUp(self):

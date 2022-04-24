@@ -19,7 +19,7 @@ app_name = "accounts"
 urlpatterns = [
     path("users/", UserProfileListAPIView.as_view(), name="user-profile-list"),
     path(
-        "users/<uuid:account_id>/",
+        "users/<uuid:pk>/",
         UserProfileDetailAPIView.as_view(),
         name="user-profile-detail",
     ),

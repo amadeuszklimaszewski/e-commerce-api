@@ -1,11 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django_countries.fields import CountryField
 import uuid
+
+from django_countries.fields import CountryField
 from phonenumber_field.modelfields import PhoneNumberField
 
 
 class UserAddress(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     address_1 = models.CharField(max_length=150, blank=True, null=True)
     address_2 = models.CharField(max_length=150, blank=True, null=True)
     country = CountryField()
@@ -22,8 +26,10 @@ class UserAddress(models.Model):
 
 
 class UserProfile(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    account_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     phone_number = PhoneNumberField()
     birthday = models.DateField()
     address = models.ManyToManyField(UserAddress, related_name="userprofile")
@@ -35,7 +41,7 @@ class UserProfile(models.Model):
         verbose_name_plural = "User Profiles"
 
     def get_absolute_url(self):
-        return f"/api/accounts/{self.account_id}/"
+        return f"/api/accounts/{self.id}/"
 
     @property
     def endpoint(self):

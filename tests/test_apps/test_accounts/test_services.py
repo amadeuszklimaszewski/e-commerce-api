@@ -90,13 +90,13 @@ class TestUserProfileService(TestCase):
 
     def test_user_profile_service_correctly_creates_user(self):
         user_profile = self.service_class.register_user(data=self.user_profile_data)
-        account_id = user_profile.account_id
+        account_id = user_profile.id
 
         self.assertEqual(UserProfile.objects.all().count(), 1)
         self.assertEqual(User.objects.all().count(), 1)
         self.assertEqual(UserAddress.objects.all().count(), 1)
 
-        self.assertEqual(UserProfile.objects.get(account_id=account_id), user_profile)
+        self.assertEqual(UserProfile.objects.get(id=account_id), user_profile)
 
     def test_user_profile_service_correctly_updates_user_no_address(self):
         user_profile = self.service_class.register_user(data=self.user_profile_data)
@@ -104,26 +104,26 @@ class TestUserProfileService(TestCase):
         user_profile = self.service_class.update_user(
             instance=user_profile, data=self.modified_user_profile_data
         )
-        account_id = user_profile.account_id
+        account_id = user_profile.id
 
         self.assertEqual(UserProfile.objects.all().count(), 1)
         self.assertEqual(User.objects.all().count(), 1)
         self.assertEqual(UserAddress.objects.all().count(), 0)
 
-        self.assertEqual(UserProfile.objects.get(account_id=account_id), user_profile)
+        self.assertEqual(UserProfile.objects.get(id=account_id), user_profile)
 
     def test_user_profile_service_correctly_updates_user_one_address(self):
         user_profile = self.service_class.register_user(data=self.user_profile_data)
         user_profile = self.service_class.update_user(
             instance=user_profile, data=self.modified_user_profile_data_one_address
         )
-        account_id = user_profile.account_id
+        account_id = user_profile.id
 
         self.assertEqual(UserProfile.objects.all().count(), 1)
         self.assertEqual(User.objects.all().count(), 1)
         self.assertEqual(UserAddress.objects.all().count(), 1)
 
-        self.assertEqual(UserProfile.objects.get(account_id=account_id), user_profile)
+        self.assertEqual(UserProfile.objects.get(id=account_id), user_profile)
         self.assertEqual(
             UserAddress.objects.get(id=1), user_profile.address.all().get(id=1)
         )
@@ -134,15 +134,13 @@ class TestUserProfileService(TestCase):
         updated_user_profile = self.service_class.update_user(
             instance=user_profile, data=self.modified_user_profile_data_two_addresses
         )
-        account_id = updated_user_profile.account_id
+        account_id = updated_user_profile.id
 
         self.assertEqual(UserProfile.objects.all().count(), 1)
         self.assertEqual(User.objects.all().count(), 1)
         self.assertEqual(UserAddress.objects.all().count(), 2)
 
-        self.assertEqual(
-            UserProfile.objects.get(account_id=account_id), updated_user_profile
-        )
+        self.assertEqual(UserProfile.objects.get(id=account_id), updated_user_profile)
         self.assertEqual(
             UserAddress.objects.get(id=1), updated_user_profile.address.all().get(id=1)
         )

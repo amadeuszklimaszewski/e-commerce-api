@@ -1,11 +1,14 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+import uuid
 
 User = get_user_model()
 
 
 class ProductCategory(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     name = models.CharField(max_length=50, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -19,6 +22,9 @@ class ProductCategory(models.Model):
 
 
 class ProductInventory(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     quantity = models.IntegerField()
     sold = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
@@ -33,6 +39,9 @@ class ProductInventory(models.Model):
 
 
 class Product(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=7, decimal_places=2)
     discount_price = models.DecimalField(
@@ -98,6 +107,9 @@ class Product(models.Model):
 
 
 class ProductReview(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="reviews"

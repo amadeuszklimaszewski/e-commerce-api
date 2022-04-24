@@ -131,8 +131,8 @@ class TestReviewService(TestCase):
         )
 
         self.assertEqual(ProductReview.objects.all().count(), 1)
-        self.assertEqual(ProductReview.objects.get(id=1), review)
-        self.assertEqual(ProductReview.objects.get(id=1).product, self.product)
+        self.assertEqual(ProductReview.objects.get(id=review.id), review)
+        self.assertEqual(ProductReview.objects.get(id=review.id).product, self.product)
 
         self.assertEqual(self.product.review_count, 1)
         self.assertEqual(self.product.avg_rating, review.rating)
