@@ -1,7 +1,7 @@
 from django.http.response import Http404
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.core import management, mail
+from django.core import mail
 from rest_framework.exceptions import ValidationError
 
 from src.apps.accounts.models import UserAddress, UserProfile

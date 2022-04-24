@@ -49,7 +49,7 @@ class CouponOrderOutputSerializer(serializers.ModelSerializer):
 
 
 class CartItemInputSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField()
+    product_id = serializers.CharField()
     quantity = serializers.IntegerField(default=1, validators=[MinValueValidator(1)])
 
 
@@ -62,7 +62,7 @@ class CouponOrderInputSerializer(serializers.Serializer):
 
 
 class CartItemOutputSerializer(serializers.ModelSerializer):
-    product_id = serializers.IntegerField(source="product.id", read_only=True)
+    product_id = serializers.CharField(source="product.id", read_only=True)
 
     class Meta:
         model = CartItem
@@ -95,11 +95,11 @@ class CartOutputSerializer(serializers.ModelSerializer):
 
 class OrderInputSerializer(serializers.Serializer):
     coupon_code = serializers.CharField(required=False)
-    address_id = serializers.IntegerField(validators=[MinValueValidator(1)])
+    address_id = serializers.CharField()
 
 
 class OrderItemOutputSerializer(serializers.ModelSerializer):
-    product_id = serializers.IntegerField(source="product.id", read_only=True)
+    product_id = serializers.CharField(source="product.id", read_only=True)
 
     class Meta:
         model = CartItem

@@ -112,7 +112,7 @@ class ProductDetailOutputSerializer(serializers.ModelSerializer):
 
 
 class ProductReviewInputSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField()
+    product_id = serializers.CharField()
     description = serializers.CharField()
     rating = serializers.FloatField(
         validators=[MaxValueValidator(5), MinValueValidator(0)]
@@ -128,7 +128,7 @@ class ProductReviewUpdateInputSerializer(serializers.Serializer):
 
 class ProductReviewOutputSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
-    product_id = serializers.IntegerField(source="product.id", read_only=True)
+    product_id = serializers.CharField(source="product.id", read_only=True)
     created = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     updated = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
