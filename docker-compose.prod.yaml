@@ -1,0 +1,42 @@
+version: '3.4'
+
+services:
+  db:
+    image: postgres:14.2
+    container_name: ecommapi_postgres
+    restart: always
+    env_file: ./config/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: gunicorn src.wsgi:application --bind=0.0.0.0:8000 --workers=4 --chdir="/app"
+    container_name: ecommapi_backend
+    restart: always
+    env_file: ./config/.env
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    networks:
+      - local
+    depends_on:
+      - db
+
+  stripe-cli:
+    image: stripe/stripe-cli
+    container_name: stripe-cli
+    env_file: ./config/.env
+    networks:
+      - local
+    command: listen --api-key ${STRIPE_SECRET_KEY} --forward-to 0.0.0.0:8000/api/stripe/webhook
+
+volumes:
+  postgres_data:
+
+networks:
+  local:
+    driver: bridge

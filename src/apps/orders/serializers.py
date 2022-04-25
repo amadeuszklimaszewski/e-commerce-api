@@ -63,12 +63,14 @@ class CouponOrderInputSerializer(serializers.Serializer):
 
 class CartItemOutputSerializer(serializers.ModelSerializer):
     product_id = serializers.CharField(source="product.id", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
 
     class Meta:
         model = CartItem
         fields = (
             "id",
             "product_id",
+            "product_name",
             "quantity",
             "total_item_price",
             "total_discount_item_price",
@@ -100,12 +102,14 @@ class OrderInputSerializer(serializers.Serializer):
 
 class OrderItemOutputSerializer(serializers.ModelSerializer):
     product_id = serializers.CharField(source="product.id", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
 
     class Meta:
         model = CartItem
         fields = (
             "id",
             "product_id",
+            "product_name",
             "quantity",
             "total_item_price",
             "total_discount_item_price",

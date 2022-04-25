@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
-from decouple import config
 import stripe
 
 from rest_framework import status, views, permissions
@@ -11,7 +11,7 @@ from src.apps.orders.services import OrderService
 from src.core.authentication import CsrfExemptSessionAuthentication
 
 
-stripe.api_key = config("STRIPE_SECRET_KEY")
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class StripeConfigView(views.APIView):
@@ -20,7 +20,7 @@ class StripeConfigView(views.APIView):
     """
 
     def get(self, request, format=None):
-        data = {"publishable_key": str(config("STRIPE_PUBLISHABLE_KEY"))}
+        data = {"publishable_key": str(settings.STRIPE_PUBLISHABLE_KEY)}
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -50,8 +50,8 @@ class StripeSessionView(views.APIView):
         }
 
         checkout_session = stripe.checkout.Session.create(
-            success_url=config("PAYMENT_SUCCESS_URL"),
-            cancel_url=config("PAYMENT_CANCEL_URL"),
+            success_url=settings.PAYMENT_SUCCESS_URL,
+            cancel_url=settings.PAYMENT_SUCCESS_URL,
             payment_method_types=["card"],
             mode="payment",
             line_items=[
@@ -78,7 +78,7 @@ class StripeWebhookView(views.APIView):
     service_class = OrderService
 
     def post(self, request, format=None):
-        endpoint_secret = config("WEBHOOK_SECRET")
+        endpoint_secret = settings.WEBHOOK_SECRET
         payload = request.body.decode("utf-8")
         sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
 
@@ -92,9 +92,7 @@ class StripeWebhookView(views.APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         if event["type"] == "checkout.session.completed":
-            print(event["data"]["object"]["payment_intent"])
             session = event["data"]["object"]
-            self.service_class.fullfill_order(session)
-            print(session["metadata"]["order_id"])
+            self.service_class.fullfill_order(session=session)
 
         return Response(status=status.HTTP_200_OK)

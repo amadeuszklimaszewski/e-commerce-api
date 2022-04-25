@@ -15,10 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from src.apps.payments.views import StripeWebhookView
 
 urlpatterns = [
-    path("webhook/", StripeWebhookView.as_view()),
     path("admin/", admin.site.urls),
     path("api/", include("src.apps.api.urls")),
 ]
