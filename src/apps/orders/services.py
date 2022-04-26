@@ -13,12 +13,13 @@ from src.apps.orders.models import (
     CartItem,
     Coupon,
 )
+from src.apps.payments.models import PaymentDetails
+from src.apps.products.models import Product
 from src.apps.orders.validators import (
     validate_item_quantity,
     validate_coupon_total,
     validate_coupon,
 )
-from src.apps.products.models import Product
 
 User = get_user_model()
 
@@ -243,12 +244,20 @@ class OrderService:
 
     @classmethod
     @transaction.atomic
-    def fullfill_order(cls, session):
+    def fullfill_order(cls, session, payment_intent):
+        stripe_charge_id = payment_intent["charges"]["data"][0]["id"]
+        amount = payment_intent["amount"] / 100
         order_id = session["metadata"]["order_id"]
         order = get_object_or_404(Order, id=order_id)
         order.order_accepted = True
         order.payment_accepted = True
         order.save()
+        payment_details = PaymentDetails.objects.create(
+            user=order.user, stripe_charge_id=stripe_charge_id, amount=amount
+        )
+        order.payment = payment_details
+        order.save()
+
         cls._update_product_inventory(order)
         cls._send_email_after_payment(order_id=order_id, email=order.user.email)
         return

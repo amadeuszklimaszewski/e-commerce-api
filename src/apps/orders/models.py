@@ -4,6 +4,8 @@ import uuid
 
 from src.apps.accounts.models import UserAddress
 from src.apps.products.models import Product
+from src.apps.payments.models import PaymentDetails
+
 
 User = get_user_model()
 
@@ -78,13 +80,6 @@ class Coupon(models.Model):
         return f"{self.code} coupon for ${self.amount}"
 
 
-# class PaymentDetails(models.Model):
-#     stripe_charge_id = models.CharField(max_length=50)
-#     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
-#     amount = models.FloatField()
-#     created = models.DateTimeField(auto_now_add=True)
-
-
 class Order(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
@@ -94,7 +89,9 @@ class Order(models.Model):
         UserAddress, on_delete=models.SET_NULL, null=True, blank=True
     )
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, blank=True, null=True)
-    #  payment = models.ForeignKey(PaymentDetails, on_delete=models.SET_NULL)
+    payment = models.ForeignKey(
+        PaymentDetails, on_delete=models.SET_NULL, blank=True, null=True
+    )
     order_accepted = models.BooleanField(default=False)
     payment_accepted = models.BooleanField(default=False)
     being_delivered = models.BooleanField(default=False)

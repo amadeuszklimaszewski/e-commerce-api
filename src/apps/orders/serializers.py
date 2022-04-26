@@ -11,6 +11,7 @@ from src.apps.orders.models import (
     CartItem,
     Coupon,
 )
+from src.apps.payments.serializers import PaymentDetailsOutputSerializer
 
 
 class CouponInputSerializer(serializers.Serializer):
@@ -126,6 +127,7 @@ class OrderOutputSerializer(serializers.ModelSerializer):
     coupon = CouponOrderOutputSerializer(many=False, read_only=True)
     address = UserAddressOutputSerializer(many=False, read_only=True)
     order_items = OrderItemOutputSerializer(many=True, read_only=True)
+    payment = PaymentDetailsOutputSerializer(many=False, read_only=True)
 
     class Meta:
         model = Order
@@ -142,6 +144,7 @@ class OrderOutputSerializer(serializers.ModelSerializer):
             "being_delivered",
             "received",
             "order_items",
+            "payment",
             "created",
             "updated",
         )

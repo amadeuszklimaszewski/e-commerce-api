@@ -93,6 +93,9 @@ class StripeWebhookView(views.APIView):
 
         if event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
-            self.service_class.fullfill_order(session=session)
+            payment_intent = stripe.PaymentIntent.retrieve(id=session["payment_intent"])
+            self.service_class.fullfill_order(
+                session=session, payment_intent=payment_intent
+            )
 
         return Response(status=status.HTTP_200_OK)
