@@ -30,9 +30,6 @@ backend-bash:
 django-shell:
 	docker-compose exec backend bash -c "python manage.py shell_plus --ipython --print-sql"
 
-format:
-	docker-compose exec backend bash -c "isort . && black ."
-
 reset-db:
 	docker-compose stop backend
 	docker-compose exec db bash -c "runuser postgres -c 'dropdb $(db-name); createdb $(db-name)'"

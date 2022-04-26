@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django_countries",
     "phonenumbers",
     "phonenumber_field",
+    "django_extensions",
     "drf_yasg",
     # local
     "src.apps.accounts",
