@@ -9,7 +9,7 @@
 * Users can create reviews of products.
 * Users can create a cart and add items to it.
 * Cart can be ordered with a coupon, which creates an Order object.
-* At `/api/orders/<order_id>/session` Stripe Session is created and returns ID and url to payment.
+* At `/api/orders/<order_id>/session/` Stripe Session is created and returns ID and url to payment.
 * Stripe Webhook detects successful payment and updates Order accordingly.
 
 ## Tech stack
