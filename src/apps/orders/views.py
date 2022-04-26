@@ -1,9 +1,8 @@
-from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
 
 from rest_framework import generics, status
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
 
 from src.apps.orders.models import (
     Order,
@@ -24,7 +23,7 @@ from src.apps.orders.serializers import (
 from src.apps.orders.services import CartService, CouponService, OrderService
 
 
-class CouponListCreateAPIView(generics.ListCreateAPIView):
+class CouponListCreateAPIView(generics.ListAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponOutputSerializers
 
@@ -34,7 +33,8 @@ class CouponListCreateAPIView(generics.ListCreateAPIView):
             return qs
         return qs.none()
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=CouponInputSerializer)
+    def post(self, request, *args, **kwargs):
         serializer = CouponInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         coupon = Coupon.objects.create(**serializer.validated_data)
@@ -44,7 +44,7 @@ class CouponListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class CouponDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class CouponDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponOutputSerializers
     service_class = CouponService
@@ -55,7 +55,8 @@ class CouponDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return qs
         return qs.none()
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=CouponInputSerializer)
+    def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = CouponInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -100,7 +101,7 @@ class CartDetailAPIView(generics.RetrieveDestroyAPIView):
         return qs.filter(user=user)
 
 
-class CartItemsListCreateAPIView(generics.ListCreateAPIView):
+class CartItemsListCreateAPIView(generics.ListAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemOutputSerializer
     service_class = CartService
@@ -113,7 +114,8 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
             return qs
         return qs.filter(cart_id=cart_pk, cart__user=user)
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=CartItemInputSerializer)
+    def post(self, request, *args, **kwargs):
         cart_id = self.kwargs.get("pk")
         serializer = CartItemInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -126,7 +128,7 @@ class CartItemsListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class CartItemsDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = CartItem.objects.all()
     serializer_class = CartItemOutputSerializer
     service_class = CartService
@@ -139,7 +141,8 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=CartItemQuantityInputSerializer)
+    def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = CartItemQuantityInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -152,13 +155,13 @@ class CartItemsDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         )
 
 
-class OrderCreateAPIView(generics.CreateAPIView):
+class OrderCreateAPIView(generics.GenericAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderOutputSerializer
     service_class = OrderService
 
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=OrderInputSerializer)
+    def post(self, request, *args, **kwargs):
         cart_id = kwargs.get("pk")
         serializer = OrderInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -185,7 +188,7 @@ class OrderListAPIView(generics.ListAPIView):
         return qs.filter(user=user)
 
 
-class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class OrderDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderOutputSerializer
     service_class = OrderService
@@ -197,7 +200,8 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return qs
         return qs.filter(user=user)
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=OrderInputSerializer)
+    def put(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.order_accepted:
             return Response(

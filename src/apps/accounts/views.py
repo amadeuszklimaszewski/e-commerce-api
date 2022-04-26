@@ -1,5 +1,6 @@
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
 
 from src.apps.accounts.models import UserAddress, UserProfile
 from src.apps.accounts.serializers import (
@@ -25,7 +26,7 @@ class UserProfileListAPIView(generics.ListAPIView):
         return qs.filter(user=user)
 
 
-class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
+class UserProfileDetailAPIView(generics.RetrieveAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileDetailOutputSerializer
     service_class = UserProfileService
@@ -37,7 +38,8 @@ class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
             return qs
         return qs.filter(user=user)
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=UserProfileUpdateInputSerializer)
+    def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = UserProfileUpdateInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -49,12 +51,15 @@ class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
         )
 
 
-class UserRegisterAPIView(generics.CreateAPIView):
+class UserRegisterAPIView(generics.GenericAPIView):
     serializer_class = RegistrationOutputSerializer
     permission_classes = [permissions.AllowAny]
     service_class = UserProfileService
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        request_body=RegistrationInputSerializer,
+    )
+    def post(self, request, *args, **kwargs):
         serializer = RegistrationInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

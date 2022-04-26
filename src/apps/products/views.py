@@ -1,6 +1,7 @@
 from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 from django_filters import rest_framework as filters
+from drf_yasg.utils import swagger_auto_schema
 
 from src.apps.products.models import (
     Product,
@@ -22,7 +23,7 @@ from src.apps.products.filters import ProductFilter, ReviewFilter
 from src.core.permissions import OwnerOrReadOnly, StaffOrReadOnly
 
 
-class ProductListCreateAPIView(generics.ListCreateAPIView):
+class ProductListCreateAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListOutputSerializer
     permission_classes = [StaffOrReadOnly]
@@ -36,7 +37,8 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
             return qs
         return qs.filter(inventory__quantity__gt=0)
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=ProductInputSerializer)
+    def post(self, request, *args, **kwargs):
         serializer = ProductInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         product = self.service_class.create_product(data=serializer.validated_data)
@@ -46,7 +48,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class ProductDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailOutputSerializer
     permission_classes = [StaffOrReadOnly]
@@ -58,7 +60,8 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return qs
         return qs.filter(inventory__quantity__gt=0)
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=ProductInputSerializer)
+    def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = ProductInputSerializer(data=request.data, partial=False)
         serializer.is_valid(raise_exception=True)
@@ -77,12 +80,13 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ProductCategoryListCreateAPIView(generics.ListCreateAPIView):
+class ProductCategoryListCreateAPIView(generics.ListAPIView):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategoryOutputSerializer
     permission_classes = [StaffOrReadOnly]
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=ProductCategoryInputSerializer)
+    def post(self, request, *args, **kwargs):
         serializer = ProductCategoryInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         category = ProductCategory.objects.create(**serializer.validated_data)
@@ -97,7 +101,7 @@ class ProductCategoryDetailAPIView(generics.RetrieveDestroyAPIView):
     permission_classes = [StaffOrReadOnly]
 
 
-class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
+class ProductReviewListCreateAPIView(generics.ListAPIView):
     queryset = ProductReview.objects.all()
     serializer_class = ProductReviewOutputSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -105,7 +109,8 @@ class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
     filterset_class = ReviewFilter
     service_class = ReviewService
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=ProductReviewInputSerializer)
+    def post(self, request, *args, **kwargs):
         user = request.user
         serializer = ProductReviewInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -117,13 +122,14 @@ class ProductReviewListCreateAPIView(generics.ListCreateAPIView):
         )
 
 
-class ProductReviewDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class ProductReviewDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = ProductReview.objects.all()
     serializer_class = ProductReviewOutputSerializer
     permission_classes = [OwnerOrReadOnly]
     service_class = ReviewService
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=ProductReviewUpdateInputSerializer)
+    def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = ProductReviewUpdateInputSerializer(
             data=request.data, partial=False
