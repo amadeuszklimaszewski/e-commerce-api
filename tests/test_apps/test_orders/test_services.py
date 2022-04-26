@@ -5,6 +5,7 @@ from django.core import mail
 from rest_framework.exceptions import ValidationError
 
 from src.apps.accounts.models import UserAddress, UserProfile
+from src.apps.payments.models import PaymentDetails
 from src.apps.products.models import Product, ProductInventory, ProductCategory
 from src.apps.orders.models import Coupon, Order, OrderItem, Cart, CartItem
 from src.apps.orders.services import CouponService, CartService, OrderService
@@ -262,6 +263,21 @@ class TestOrderService(TestCase):
             "payment_method_types": ["card"],
             "payment_status": "paid",
         }
+        cls.payment_intent = {
+            "id": "pi_test_id",
+            "object": "payment_intent",
+            "amount": 1000,
+            "charges": {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "ch_test_intent",
+                        "object": "charge",
+                        "amount": 1000,
+                    }
+                ],
+            },
+        }
 
     def test_order_service_correctly_creates_order_with_no_coupon(self):
         order = self.service_class.create_order(
@@ -408,7 +424,9 @@ class TestOrderService(TestCase):
         order_id = order.id
 
         self.stripe_session["metadata"]["order_id"] = order_id
-        self.service_class.fullfill_order(self.stripe_session)
+        self.service_class.fullfill_order(
+            session=self.stripe_session, payment_intent=self.payment_intent
+        )
         order = Order.objects.get(id=order_id)
 
         self.assertTrue(order.order_accepted)
@@ -420,7 +438,9 @@ class TestOrderService(TestCase):
         )
 
         self.stripe_session["metadata"]["order_id"] = order.id
-        self.service_class.fullfill_order(self.stripe_session)
+        self.service_class.fullfill_order(
+            session=self.stripe_session, payment_intent=self.payment_intent
+        )
         order_item = OrderItem.objects.get(order_id=order.id)
 
         self.assertEqual(order_item.quantity, order_item.product.inventory.sold)
@@ -430,7 +450,9 @@ class TestOrderService(TestCase):
             self.cart.id, user=self.user, data=self.order_data_no_coupon
         )
         self.stripe_session["metadata"]["order_id"] = order.id
-        self.service_class.fullfill_order(self.stripe_session)
+        self.service_class.fullfill_order(
+            session=self.stripe_session, payment_intent=self.payment_intent
+        )
 
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
@@ -445,3 +467,19 @@ class TestOrderService(TestCase):
         )
         self.assertEqual(mail.outbox[1].from_email, "ecommapi@ecommapi.com")
         self.assertEqual(mail.outbox[1].to, ["{}".format(order.user.email)])
+
+    def test_order_service_correctly_creates_payment_details(self):
+        order = self.service_class.create_order(
+            self.cart.id, user=self.user, data=self.order_data_no_coupon
+        )
+        self.stripe_session["metadata"]["order_id"] = order.id
+        self.service_class.fullfill_order(
+            session=self.stripe_session, payment_intent=self.payment_intent
+        )
+        self.assertEqual(PaymentDetails.objects.all().count(), 1)
+        self.assertEqual(
+            Order.objects.get(id=order.id).payment, PaymentDetails.objects.get()
+        )
+        self.assertEqual(
+            Order.objects.get(id=order.id).user, PaymentDetails.objects.get().user
+        )
