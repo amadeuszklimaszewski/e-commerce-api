@@ -13,7 +13,11 @@ from src.apps.orders.models import (
     CartItem,
     Coupon,
 )
-from src.apps.orders.validators import validate_item_quantity, validate_coupon_total
+from src.apps.orders.validators import (
+    validate_item_quantity,
+    validate_coupon_total,
+    validate_coupon,
+)
 from src.apps.products.models import Product
 
 User = get_user_model()
@@ -26,7 +30,21 @@ class CouponService:
 
     @classmethod
     @transaction.atomic
+    def create_coupon(cls, data: dict[str, Any]) -> Coupon:
+        min_total = data["min_order_total"]
+        amount = data["amount"]
+        validate_coupon(amount=amount, min_total=min_total)
+
+        coupon = Coupon.objects.create(**data)
+        return coupon
+
+    @classmethod
+    @transaction.atomic
     def update_coupon(cls, instance: Coupon, data: dict[str, Any]) -> Coupon:
+        min_total = data["min_order_total"]
+        amount = data["amount"]
+        validate_coupon(amount=amount, min_total=min_total)
+
         fields = [
             "code",
             "amount",

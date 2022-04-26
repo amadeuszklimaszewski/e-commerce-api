@@ -15,9 +15,9 @@ from src.apps.orders.models import (
 
 class CouponInputSerializer(serializers.Serializer):
     code = serializers.CharField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(validators=[MinValueValidator(0)])
     is_active = serializers.BooleanField()
-    min_order_total = serializers.IntegerField()
+    min_order_total = serializers.IntegerField(validators=[MinValueValidator(10)])
 
 
 class CouponOutputSerializers(serializers.ModelSerializer):

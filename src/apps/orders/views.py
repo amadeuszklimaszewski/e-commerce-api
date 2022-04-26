@@ -26,6 +26,7 @@ from src.apps.orders.services import CartService, CouponService, OrderService
 class CouponListCreateAPIView(generics.ListAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponOutputSerializers
+    service_class = CouponService
 
     def get_queryset(self):
         qs = self.queryset
@@ -37,7 +38,7 @@ class CouponListCreateAPIView(generics.ListAPIView):
     def post(self, request, *args, **kwargs):
         serializer = CouponInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        coupon = Coupon.objects.create(**serializer.validated_data)
+        coupon = self.service_class.create_coupon(data=serializer.validated_data)
         return Response(
             self.get_serializer(coupon).data,
             status=status.HTTP_201_CREATED,

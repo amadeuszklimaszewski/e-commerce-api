@@ -28,14 +28,48 @@ class TestCouponService(TestCase):
             "is_active": False,
             "min_order_total": 40,
         }
+        cls.incorrect_coupon_data = {
+            "code": "wrongtest10",
+            "amount": 20,
+            "is_active": True,
+            "min_order_total": 10,
+        }
 
-    def test_coupon_service_correctly_creates_product(self):
-        coupon = Coupon.objects.create(**self.coupon_data)
+    def test_coupon_service_correctly_creates_coupo(self):
+        coupon = self.service_class.create_coupon(data=self.coupon_data)
+
+        self.assertEqual(Coupon.objects.all().count(), 1)
+        self.assertEqual(Coupon.objects.get(id=coupon.id), coupon)
+
+    def test_coupon_service_correctly_updates_coupon(self):
+        coupon = self.service_class.create_coupon(data=self.coupon_data)
         updated_coupon = self.service_class.update_coupon(
             instance=coupon, data=self.modified_coupon_data
         )
         self.assertEqual(Coupon.objects.all().count(), 1)
         self.assertEqual(Coupon.objects.get(id=coupon.id), updated_coupon)
+
+    def test_coupon_service_raises_validation_error_on_incorrect_min_total(self):
+        with self.assertRaises(ValidationError):
+            self.service_class.create_coupon(data=self.incorrect_coupon_data)
+
+        self.assertEqual(Coupon.objects.all().count(), 0)
+
+    def test_coupon_service_raises_validation_error_on_incorrect_min_total_update(self):
+        coupon = self.service_class.create_coupon(data=self.coupon_data)
+        with self.assertRaises(ValidationError):
+            self.service_class.update_coupon(
+                instance=coupon, data=self.incorrect_coupon_data
+            )
+
+        self.assertEqual(Coupon.objects.all().count(), 1)
+        self.assertEqual(
+            Coupon.objects.get(id=coupon.id).amount, self.coupon_data["amount"]
+        )
+        self.assertEqual(
+            Coupon.objects.get(id=coupon.id).min_order_total,
+            self.coupon_data["min_order_total"],
+        )
 
 
 class TestCartService(TestCase):
