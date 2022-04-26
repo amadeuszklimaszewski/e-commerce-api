@@ -123,11 +123,13 @@ class OrderService:
     and deletes the cart used to create an order.
 
     Optional coupons are checked if they exist, are active and
-    the minimal total requirement is fulfilled.
+    the minimal total requirement is fulfilled. After an order is created,
+    email is sent out to the buyer.
 
-    After a payment is confirmed by Stripe, StripeWebhookView calls .fullfill()
-    method which updates quantity sold of each item and changes
-    .payment_accepted attribute of an order to `True`.
+    After a payment is confirmed by Stripe, StripeWebhookView calls .fullfill_order()
+    method which updates quantity sold of each item and change .payment_accepted
+    attribute of an order to `True`. It also sends out an email to the buyer with
+    payment confirmation message and creates PaymentDetails object.
     """
 
     @classmethod
