@@ -25,7 +25,7 @@
 2. Run in root directory:
 `$ make build-dev`
 3. Provide `STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY` in .env file
-4. Run `make dev-up`
+4. Run project: `make dev-up`
 5. Provide Stripe's `WEEBHOK_SECRET` in .env
 
 ## Tests
