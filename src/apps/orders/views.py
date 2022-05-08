@@ -221,5 +221,10 @@ class OrderDetailAPIView(generics.RetrieveDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.order_accepted:
+            return Response(
+                {"order_accepted": "Order already accepted and paid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         self.service_class.destroy_order(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
