@@ -15,6 +15,9 @@ up-prod:
 	docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml run --rm backend bash -c "python manage.py migrate"
 	docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d
 
+collectstatic:
+	docker-compose exec -u 0 backend bash -c "python manage.py collectstatic --no-input"
+	
 migrations:
 	docker-compose exec backend bash -c "python manage.py makemigrations && python manage.py migrate"
 

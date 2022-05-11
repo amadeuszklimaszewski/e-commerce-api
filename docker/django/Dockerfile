@@ -19,6 +19,8 @@ RUN apt-get update -q && apt-get install -yq netcat
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
+COPY . .
+
 EXPOSE 8000
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder

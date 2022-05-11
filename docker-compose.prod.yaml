@@ -6,23 +6,42 @@ services:
     container_name: ecommapi_postgres
     restart: always
     env_file: ./.env
+    networks:
+      - db_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
     build:
       context: .
-      dockerfile: ./Dockerfile
-    command: gunicorn src.wsgi:application --bind=0.0.0.0:8000 --workers=4 --chdir="/app"
+      dockerfile: ./docker/django/Dockerfile.prod
     container_name: ecommapi_backend
-    restart: always
     env_file: ./.env
+    restart: always
+    command: gunicorn src.wsgi:application --bind=0.0.0.0:8000 --workers=4
     volumes:
-      - .:/app
-    ports:
-      - 8000:8000
+      - static_volume:/app/static
+      - media_volume:/app/media
+    networks:
+      - db_network
+      - nginx_network
     depends_on:
       - db
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    container_name: nginx
+    restart: always
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/app/static
+      - media_volume:/app/media
+    depends_on:
+      - backend
+    networks:
+      - nginx_network
 
   stripe-cli:
     image: stripe/stripe-cli:latest
@@ -33,3 +52,11 @@ services:
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  db_network:
+    driver: bridge
+  nginx_network:
+    driver: bridge
