@@ -55,8 +55,8 @@ class CouponService:
         for field in fields:
             try:
                 setattr(instance, field, data[field])
-            except (Error := KeyError):
-                raise Error(f"{Error} : Missing data")
+            except KeyError as err:
+                raise err("Missing or invalid data.")
         instance.save()
         return instance
 
@@ -110,7 +110,7 @@ class CartService:
             try:
                 setattr(instance, "quantity", quantity)
             except KeyError as err:
-                raise err(f"{err} : Missing or wrong data")
+                raise err("Missing or invalid data.")
             instance.save()
             return instance
         return
